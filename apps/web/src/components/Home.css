@@ -1,0 +1,201 @@
+.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    /* Deep Navy Blue Gradient */
+    background: radial-gradient(circle at 50% 50%, #0f2040 0%, #020510 100%);
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.home-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        linear-gradient(45deg, rgba(2, 5, 20, 0.9), transparent),
+        url('../assets/hero-volleyball.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.4;
+    z-index: 0;
+    filter: grayscale(100%) contrast(120%);
+}
+
+.top-logo {
+    position: absolute;
+    top: 0rem;
+    left: 0rem;
+    width: 150px;
+    height: auto;
+    z-index: 100;
+    display: block;
+}
+
+
+
+/* Invisible wrapper, layout only */
+/* Invisible wrapper, layout only */
+.content-wrapper {
+    z-index: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3.5rem;
+    will-change: transform, opacity;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.8s ease;
+}
+
+/* Dramatic Explosion Exit - Optimized */
+.content-wrapper.fade-out {
+    opacity: 0;
+    transform: scale(2.5) rotate(2deg);
+    /* Reduced scale for performance */
+    filter: blur(10px);
+    /* Reduced blur radius from 30px */
+    pointer-events: none;
+}
+
+.logo-container {
+    position: relative;
+    /* Adding a subtle float animation to the logo container */
+    animation: float 6s ease-in-out infinite;
+    will-change: transform;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.title {
+    font-size: 8rem;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -4px;
+    background: linear-gradient(180deg, #ffffff 0%, #666666 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    margin: 0;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+    animation: slideUp 1s ease-out forwards;
+    will-change: transform, opacity;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #a5a5a5;
+    margin-top: 1.5rem;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 0.5s forwards;
+    will-change: opacity, transform;
+}
+
+/* Modern Dramatic CTA Button */
+.cta-button {
+    margin-top: 3rem;
+    padding: 1.2rem 4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1),
+        box-shadow 0.4s ease,
+        letter-spacing 0.4s ease,
+        border-color 0.4s ease,
+        background-color 0.4s ease;
+    opacity: 0;
+    animation: fadeIn 1.2s ease-out 1.2s forwards;
+    position: relative;
+    overflow: hidden;
+    will-change: transform;
+    /* Removed backdrop-filter to improve performance during animation */
+}
+
+.cta-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.6s ease-out, opacity 0.6s ease;
+    border-radius: 50%;
+    will-change: transform;
+    pointer-events: none;
+}
+
+.cta-button:hover {
+    border-color: #fff;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+    /* Slightly reduced glow */
+    transform: scale(1.05);
+    /* Reduced scale */
+    letter-spacing: 6px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cta-button:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+}
+
+.cta-button:active {
+    transform: scale(0.98);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Removed duplicate animations to keep file clean */
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 4rem;
+        letter-spacing: -2px;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        letter-spacing: 2px;
+        margin-top: 1rem;
+    }
+
+    .content-wrapper {
+        padding: 0;
+        /* No need for padding without bg */
+        width: 100%;
+    }
+
+    .content-wrapper.fade-out {
+        transform: scale(2) rotate(2deg);
+    }
+}

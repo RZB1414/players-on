@@ -1,0 +1,214 @@
+/* Options Container */
+.options-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Stack main and secondary */
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    perspective: 1000px;
+}
+
+.options-container.fade-in {
+    pointer-events: all;
+    opacity: 1;
+}
+
+/* Main Options Grid */
+.options-main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1000px;
+
+}
+
+/* Secondary Options Row */
+.options-secondary {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+/* Option Cards */
+.option-card {
+    width: 200px;
+    height: 280px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transform: translateY(100px) scale(0.8);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.4s ease,
+        background-color 0.4s ease,
+        border-color 0.4s ease,
+        box-shadow 0.4s ease;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    will-change: transform, opacity;
+}
+
+.options-container.fade-in .option-card {
+    animation: cardEntrance 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: calc(var(--i) * 0.1s + 0.3s);
+}
+
+.option-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    /* Reduced movement for smoother feel */
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+.option-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    z-index: 2;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    padding: 1rem;
+}
+
+.card-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+}
+
+/* Secondary Buttons */
+.secondary-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.8rem 2rem;
+    border-radius: 30px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+    animation-delay: 1s;
+    /* Appear after cards */
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+
+/* Shine Effect on Cards */
+.shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    transform: skewX(-20deg);
+    transition: 0.5s;
+}
+
+.option-card:hover .shine {
+    animation: shineSwipe 1s forwards;
+}
+
+@keyframes cardEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(150px) rotateX(45deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shineSwipe {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 200%;
+    }
+}
+
+@media (max-width: 768px) {
+    .options-container {
+        padding-top: 8rem;
+        /* Reduced from 12rem to keep content visible */
+        justify-content: flex-start;
+        overflow-y: auto;
+    }
+
+    .options-main {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .option-card {
+        width: 80%;
+        height: 80px;
+        min-height: 80px;
+        flex-direction: row;
+    }
+
+    .options-secondary {
+        flex-direction: column;
+        width: 80%;
+        gap: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .secondary-btn {
+        width: 100%;
+    }
+}

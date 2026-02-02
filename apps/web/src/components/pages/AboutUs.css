@@ -1,0 +1,195 @@
+/* About Us Page Specific Styles */
+.about-intro {
+    max-width: 800px;
+    margin: 0 auto 4rem auto;
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+}
+
+.about-intro p {
+    margin-bottom: 1.5rem;
+}
+
+/* Founder Section */
+.founder-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 6rem;
+    position: relative;
+}
+
+.founder-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 3rem;
+    max-width: 900px;
+    width: 100%;
+    gap: 2rem;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.founder-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.founder-img-wrapper {
+    width: 300px;
+    height: 300px;
+    /* Force square/circle */
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+}
+
+.founder-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Stick to contain to avoid cropping stickers */
+    transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.founder-card:hover .founder-img {
+    transform: scale(1.05);
+}
+
+.founder-info {
+    text-align: center;
+}
+
+.founder-info h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(180deg, #ffffff 0%, #666666 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.founder-role {
+    font-size: 1.2rem;
+    color: #ff4d4d;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 1.5rem;
+    display: block;
+    font-weight: 700;
+}
+
+.founder-bio {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Team Grid */
+.team-section-title {
+    text-align: center;
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 3rem;
+    color: white;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    /* Increased min-width for larger cards */
+    gap: 2rem;
+    width: 100%;
+}
+
+.team-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.team-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.team-img-wrapper {
+    width: 300px;
+    /* Standardized to match founder */
+    height: 300px;
+    /* Standardized to match founder */
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    /* Matched border */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    /* Added shadow */
+}
+
+.team-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Stick to contain */
+}
+
+.team-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.team-card .role {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: #a5a5a5;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.team-card p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@media (min-width: 768px) {
+    .founder-card {
+        flex-direction: row;
+        text-align: left;
+    }
+
+    .founder-info {
+        text-align: left;
+    }
+
+    .founder-bio {
+        margin: 0;
+    }
+}
