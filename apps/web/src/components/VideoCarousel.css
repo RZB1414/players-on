@@ -266,8 +266,11 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: auto;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100dvh;
+    /* Modern mobile fix */
     background: rgba(0, 5, 20, 0.95);
     backdrop-filter: blur(20px);
     z-index: 1000;
