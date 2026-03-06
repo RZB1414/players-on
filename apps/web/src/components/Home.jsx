@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import topLogo from '../assets/logo.png';
 import Options from './Options';
@@ -13,6 +14,7 @@ import LatestHighlights from './pages/LatestHighlights';
 const Home = () => {
     const [showOptions, setShowOptions] = useState(false);
     const [activePage, setActivePage] = useState(null);
+    const navigate = useNavigate();
 
     // Handle browser back button (popstate)
     React.useEffect(() => {
@@ -67,6 +69,14 @@ const Home = () => {
 
     return (
         <div className={`home-container ${showOptions ? 'active-options' : ''}`}>
+            {!activePage && (
+                <button
+                    className="login-btn-top-right"
+                    onClick={() => navigate('/login')}
+                >
+                    Login
+                </button>
+            )}
             {!activePage && (
                 <img
                     src={topLogo}

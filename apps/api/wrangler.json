@@ -1,5 +1,22 @@
 {
-    "name": "players-on-api",
-    "main": "src/index.js",
-    "compatibility_date": "2026-01-25"
+	"name": "players-on-api",
+	"account_id": "f5559c8828f727044a3b4c2bc557909d",
+	"main": "src/index.js",
+	"compatibility_date": "2026-01-25",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"enabled": true
+	},
+	"placement": {
+		"mode": "smart"
+	},
+	"r2_buckets": [
+		{
+			"binding": "PLAYERS_DOCUMENTS_BUCKET",
+			"bucket_name": "players-documents",
+			"preview_bucket_name": "players-documents-dev"
+		}
+	]
 }
