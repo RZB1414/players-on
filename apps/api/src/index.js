@@ -16,13 +16,26 @@ import {
     handleUpdateProfile,
     handleUploadDocument,
     handleGetDocument,
-    handleDeleteDocument
+    handleDeleteDocument,
+    handleUploadProfilePicture,
+    handleGetProfilePicture
 } from './routes/player.js';
+import {
+    handleGetPublicProfile,
+    handleGetPublicDocument,
+    handleGetProfileAnalytics,
+} from './routes/publicPlayer.js';
+import { ensurePlayerIndexes } from './services/playerService.js';
+import { ensureAnalyticsIndexes } from './services/analyticsService.js';
 import { errorResponse } from './utils/response.js';
 
 // Rate limiter instances
 const authRateLimit = rateLimit({ maxRequests: 5, windowMs: 60000 });
 const uploadRateLimit = rateLimit({ maxRequests: 3, windowMs: 60000 });
+// Note: public profile rate limit uses KV (env.RATE_LIMIT_KV) — handled inside handleGetPublicProfile
+
+// Track whether indexes have been created this isolate lifetime
+let indexesEnsured = false;
 
 export default {
     async fetch(request, env, ctx) {
@@ -63,6 +76,17 @@ export default {
                 const conn = await connectToDatabase(env);
                 dbClient = conn.client;
                 db = conn.db;
+
+                // Ensure indexes once per isolate lifetime (no-op if already exist)
+                if (!indexesEnsured) {
+                    indexesEnsured = true;
+                    ctx.waitUntil(
+                        Promise.all([
+                            ensurePlayerIndexes(db),
+                            ensureAnalyticsIndexes(db),
+                        ]).catch(e => console.error('[INDEX_SETUP_ERROR]', e.message))
+                    );
+                }
             } catch (dbError) {
                 console.error('[DB_CONNECTION_ERROR]', dbError.message);
                 return withCors(errorResponse('Erro de conexão com o banco de dados', 503), corsHeaders);
@@ -122,6 +146,31 @@ export default {
                     response = errorResponse('ID do documento é obrigatório', 400);
                 } else {
                     response = await handleDeleteDocument(request, env, db, documentId);
+                }
+            } else if (path === '/api/player/profile-picture' && method === 'POST') {
+                const rateLimitResponse = uploadRateLimit(request);
+                if (rateLimitResponse) return withCors(rateLimitResponse, corsHeaders);
+                response = await handleUploadProfilePicture(request, env, db);
+            } else if (path === '/api/player/profile-picture' && method === 'GET') {
+                response = await handleGetProfilePicture(request, env, db);
+            } else if (path === '/api/player/profile-analytics' && method === 'GET') {
+                response = await handleGetProfileAnalytics(request, env, db);
+            }
+
+            // Public Profile routes (no auth)
+            else if (path.startsWith('/api/public/player/') && method === 'GET') {
+                const rest = path.slice('/api/public/player/'.length); // e.g. "slug" or "slug/documents/docId"
+                const parts = rest.split('/');
+                const slug = parts[0];
+                if (parts.length === 1) {
+                    // GET /api/public/player/:slug
+                    response = await handleGetPublicProfile(request, env, ctx, db, slug);
+                } else if (parts.length === 3 && parts[1] === 'documents') {
+                    // GET /api/public/player/:slug/documents/:docId
+                    const docId = parts[2];
+                    response = await handleGetPublicDocument(request, env, db, slug, docId);
+                } else {
+                    response = errorResponse('Rota não encontrada', 404);
                 }
             }
 

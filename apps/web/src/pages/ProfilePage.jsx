@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import PersonalInfoForm from '../components/profile/PersonalInfoForm';
 import DynamicList from '../components/profile/DynamicList';
+import LanguageList from '../components/profile/LanguageList';
 import DocumentUpload from '../components/profile/DocumentUpload';
+import ProfilePictureUpload from '../components/profile/ProfilePictureUpload';
 import '../styles/Dashboard.css';
 import './ProfilePage.css';
 
@@ -25,6 +27,12 @@ export default function ProfilePage() {
         blockReachCm: '',
         birthYear: '',
         whatsappNumber: '',
+        nationality: '',
+        secondNationality: '',
+        nativeLanguage: '',
+        otherLanguages: [],
+        currentTeam: '',
+        currentTeamCountry: '',
         achievements: [],
         individualAwards: []
     });
@@ -41,6 +49,12 @@ export default function ProfilePage() {
                 blockReachCm: profile.blockReachCm || '',
                 birthYear: profile.birthYear || '',
                 whatsappNumber: profile.whatsappNumber || '',
+                nationality: profile.nationality || '',
+                secondNationality: profile.secondNationality || '',
+                nativeLanguage: profile.nativeLanguage || '',
+                otherLanguages: profile.otherLanguages || [],
+                currentTeam: profile.currentTeam || '',
+                currentTeamCountry: profile.currentTeamCountry || '',
                 achievements: profile.achievements || [],
                 individualAwards: profile.individualAwards || [],
             });
@@ -105,13 +119,52 @@ export default function ProfilePage() {
                         <p>Complete suas informações para se destacar.</p>
                     </header>
 
-                    {error && <div className="alert alert-error">{error}</div>}
-                    {submitError && <div className="alert alert-error">{submitError}</div>}
+                    {error && (
+                        <div className="alert alert-error">
+                            <div className="alert-icon">⚠️</div>
+                            <div className="alert-content">
+                                <strong>Foram encontrados os seguintes erros:</strong>
+                                <ul>
+                                    {Array.from(new Set(error.split('..').map(err => err.trim().replace(/^\./, '').replace(/\.$/, '')).filter(Boolean))).map((err, i) => (
+                                        <li key={i}>{err}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+                    {submitError && (
+                        <div className="alert alert-error">
+                            <div className="alert-icon">⚠️</div>
+                            <div className="alert-content">
+                                <strong>Erro ao salvar:</strong>
+                                <ul>
+                                    {Array.from(new Set(submitError.split('..').map(err => err.trim().replace(/^\./, '').replace(/\.$/, '')).filter(Boolean))).map((err, i) => (
+                                        <li key={i}>{err}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
                     {submitSuccess && <div className="alert alert-success">{submitSuccess}</div>}
+
+                    <section className="profile-section">
+                        <h2>Foto de Perfil</h2>
+                        <ProfilePictureUpload />
+                    </section>
 
                     <section className="profile-section">
                         <h2>Informações Pessoais</h2>
                         <PersonalInfoForm formData={formData} setFormData={setFormData} />
+                    </section>
+
+                    <section className="profile-section">
+                        <h2>Idiomas</h2>
+                        <LanguageList
+                            nativeLanguage={formData.nativeLanguage}
+                            setNativeLanguage={(val) => setFormData({ ...formData, nativeLanguage: val })}
+                            items={formData.otherLanguages}
+                            setItems={(newItems) => setFormData({ ...formData, otherLanguages: newItems })}
+                        />
                     </section>
 
                     <section className="profile-section">

@@ -18,5 +18,12 @@
 			"bucket_name": "players-documents",
 			"preview_bucket_name": "players-documents-dev"
 		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "RATE_LIMIT_KV",
+			"id": "910e81c6ffc54e5aabbc7a177089b89c",
+			"remote": true
+		}
 	]
 }

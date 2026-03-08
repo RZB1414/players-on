@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import PublicPlayerProfile from './pages/PublicPlayerProfile';
 import Home from './components/Home';
 import './App.css';
 
@@ -16,6 +17,8 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          {/* Public athlete profile — no auth required */}
+          <Route path="/p/:slug" element={<PublicPlayerProfile />} />
           <Route
             path="/dashboard"
             element={

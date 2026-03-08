@@ -46,6 +46,43 @@ export function validatePlayerProfile(data) {
         errors.push('Número de WhatsApp inválido.');
     }
 
+    // Current Team (optional)
+    if (data.currentTeam && data.currentTeam.length > 100) {
+        errors.push('O nome do time não pode exceder 100 caracteres.');
+    }
+    if (data.currentTeamCountry && data.currentTeamCountry.length > 50) {
+        errors.push('O país do time não pode exceder 50 caracteres.');
+    }
+
+    // Nationality
+    if (!data.nationality || typeof data.nationality !== 'string' || data.nationality.trim().length < 2) {
+        errors.push('A nacionalidade é obrigatória.');
+    }
+    if (data.secondNationality && typeof data.secondNationality !== 'string') {
+        errors.push('A segunda nacionalidade, se fornecida, deve ser texto válida.');
+    }
+
+    // Languages
+    if (!data.nativeLanguage || typeof data.nativeLanguage !== 'string' || data.nativeLanguage.trim().length < 2) {
+        errors.push('O idioma nativo é obrigatório.');
+    }
+    if (data.otherLanguages) {
+        if (!Array.isArray(data.otherLanguages)) {
+            errors.push('Outros idiomas devem ser uma lista válida.');
+        } else if (data.otherLanguages.length > 10) {
+            errors.push('Você pode adicionar no máximo 10 outros idiomas.');
+        } else {
+            data.otherLanguages.forEach((lang, index) => {
+                if (!lang.name || typeof lang.name !== 'string' || lang.name.trim().length === 0) {
+                    errors.push(`Outro idioma [${index + 1}]: o nome do idioma é obrigatório.`);
+                }
+                if (!lang.level || typeof lang.level !== 'string' || lang.level.trim().length === 0) {
+                    errors.push(`Outro idioma [${index + 1}]: o nível de proficiência é obrigatório.`);
+                }
+            });
+        }
+    }
+
     // Arrays validation (max 30 items)
     const validateArrayItem = (item, prefix) => {
         if (!item || typeof item !== 'object') {
@@ -88,6 +125,25 @@ export function validatePlayerProfile(data) {
             errors.push('Você pode adicionar no máximo 30 premiações.');
         } else {
             data.individualAwards.forEach((item, index) => validateArrayItem(item, `Premiação [${index + 1}]:`));
+        }
+    }
+
+    // YouTube Videos (optional, max 10)
+    if (data.youtubeVideos) {
+        if (!Array.isArray(data.youtubeVideos)) {
+            errors.push('Os vídeos devem ser uma lista válida.');
+        } else if (data.youtubeVideos.length > 10) {
+            errors.push('Você pode adicionar no máximo 10 vídeos.');
+        } else {
+            const ytRegex = /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}/;
+            data.youtubeVideos.forEach((video, index) => {
+                if (!video.url || typeof video.url !== 'string' || !ytRegex.test(video.url)) {
+                    errors.push(`Vídeo [${index + 1}]: URL do YouTube inválida.`);
+                }
+                if (video.title && video.title.length > 100) {
+                    errors.push(`Vídeo [${index + 1}]: título não pode exceder 100 caracteres.`);
+                }
+            });
         }
     }
 

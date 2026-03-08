@@ -8,9 +8,11 @@ import {
     getProfile,
     addDocument,
     deleteDocument,
-    getDocumentStream
+    getDocumentStream,
+    addProfilePicture,
+    getProfilePictureStream
 } from '../services/playerService.js';
-import { parsePdfUpload } from '../services/uploadService.js';
+import { parsePdfUpload, parseImageUpload } from '../services/uploadService.js';
 
 export async function handleGetProfile(request, env, db) {
     const auth = await authMiddleware(request, env);
@@ -95,4 +97,42 @@ export async function handleDeleteDocument(request, env, db, documentId) {
     } catch (error) {
         return errorResponse(error.message, 400);
     }
+}
+
+export async function handleUploadProfilePicture(request, env, db) {
+    const auth = await authMiddleware(request, env);
+    if (!auth.authenticated) return auth.response;
+
+    const requestContext = {
+        ip: getClientIP(request),
+        userAgent: request.headers.get('user-agent') || ''
+    };
+
+    try {
+        const fileData = await parseImageUpload(request);
+        const result = await addProfilePicture(auth.user.id, fileData, env, db, requestContext);
+
+        return successResponse({
+            success: true,
+            hasProfilePicture: result.hasProfilePicture,
+            message: 'Foto de perfil enviada com sucesso'
+        }, 201);
+    } catch (error) {
+        return errorResponse(error.message, 400);
+    }
+}
+
+export async function handleGetProfilePicture(request, env, db) {
+    const auth = await authMiddleware(request, env);
+    if (!auth.authenticated) return auth.response;
+
+    const result = await getProfilePictureStream(auth.user.id, env, db);
+
+    if (!result.success) {
+        return errorResponse(result.message, result.status);
+    }
+
+    return new Response(result.stream, {
+        headers: result.headers
+    });
 }

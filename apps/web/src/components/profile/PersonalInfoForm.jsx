@@ -1,4 +1,5 @@
 import React from 'react';
+import CountrySearch from './CountrySearch';
 
 const POSITIONS = ['Levantador', 'Ponteiro', 'Oposto', 'Central', 'Libero'];
 
@@ -53,6 +54,26 @@ export default function PersonalInfoForm({ formData, setFormData }) {
                     required
                 />
             </div>
+
+            <div className="form-group">
+                <label htmlFor="nationality">Nacionalidade</label>
+                <CountrySearch
+                    value={formData.nationality || ''}
+                    onChange={(val) => setFormData(prev => ({ ...prev, nationality: val }))}
+                    placeholder="Ex: Brasileira"
+                    required
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="secondNationality">Segunda Nacionalidade (Opcional)</label>
+                <CountrySearch
+                    value={formData.secondNationality || ''}
+                    onChange={(val) => setFormData(prev => ({ ...prev, secondNationality: val }))}
+                    placeholder="Ex: Italiana"
+                />
+            </div>
+
 
             <div className="form-group">
                 <label htmlFor="whatsappNumber">WhatsApp</label>
@@ -127,6 +148,30 @@ export default function PersonalInfoForm({ formData, setFormData }) {
                     required
                 />
             </div>
+
+            {/* Current Team */}
+            <div className="form-group">
+                <label htmlFor="currentTeam">Time Atual (Opcional)</label>
+                <input
+                    type="text"
+                    id="currentTeam"
+                    name="currentTeam"
+                    value={formData.currentTeam || ''}
+                    onChange={handleChange}
+                    placeholder="Ex: Sada Cruzeiro"
+                    maxLength={100}
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="currentTeamCountry">País do Time Atual (Opcional)</label>
+                <CountrySearch
+                    value={formData.currentTeamCountry || ''}
+                    onChange={(val) => setFormData(prev => ({ ...prev, currentTeamCountry: val }))}
+                    placeholder="Pesquisar país..."
+                />
+            </div>
         </div>
+
     );
 }

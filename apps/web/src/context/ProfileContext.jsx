@@ -121,6 +121,49 @@ export const ProfileProvider = ({ children }) => {
         }
     };
 
+    const uploadProfilePicture = async (file) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const data = await fetchApi('/api/player/profile-picture', {
+                method: 'POST',
+                body: formData,
+                omitContentType: true
+            });
+
+            // Optimistic update
+            setProfile(prev => ({
+                ...prev,
+                hasProfilePicture: data.hasProfilePicture,
+                profilePictureUpdatedAt: new Date().toISOString()
+            }));
+
+            return { success: true, hasProfilePicture: data.hasProfilePicture };
+        } catch (err) {
+            return { success: false, error: err.message };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getProfilePictureUrl = async () => {
+        if (!profile || !profile.hasProfilePicture) return null;
+        try {
+            const blob = await fetchApi('/api/player/profile-picture', {
+                method: 'GET',
+                responseType: 'blob'
+            });
+            return window.URL.createObjectURL(blob);
+        } catch (err) {
+            console.error("Failed to load profile picture", err);
+            return null;
+        }
+    };
+
     return (
         <ProfileContext.Provider
             value={{
@@ -131,6 +174,8 @@ export const ProfileProvider = ({ children }) => {
                 uploadDocument,
                 deleteDocument,
                 openDocument,
+                uploadProfilePicture,
+                getProfilePictureUrl,
                 refreshProfile: loadProfile
             }}
         >

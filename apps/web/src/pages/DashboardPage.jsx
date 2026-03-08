@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { COUNTRIES, getNationalityFlagUrl, getLanguageFlagUrl } from '../components/profile/CountrySearch';
 import '../styles/Dashboard.css';
 
 export default function DashboardPage() {
@@ -13,11 +14,51 @@ export default function DashboardPage() {
     } = useAuth();
 
     const navigate = useNavigate();
-    const { profile, loading: profileLoading, openDocument } = useProfile();
+    const { profile, loading: profileLoading, openDocument, getProfilePictureUrl } = useProfile();
     const [activeTab, setActiveTab] = useState('overview');
     const [expandedDocId, setExpandedDocId] = useState(null);
     const [viewerUrl, setViewerUrl] = useState(null);
     const [error, setError] = useState('');
+    const [profilePicUrl, setProfilePicUrl] = useState(null);
+    const [analytics, setAnalytics] = useState(null);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+    const [analyticsCopied, setAnalyticsCopied] = useState(false);
+
+    const API_BASE = import.meta.env.VITE_API_URL || 'https://players-on-api.volleyplusapp.workers.dev';
+    const profileSlug = profile?.slug;
+
+    // We use a cloud URL for sharing, since users expect to copy the live public link even when testing/saving.
+    const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    const publicProfileUrl = profileSlug ? `${FRONTEND_URL}/p/${profileSlug}` : null;
+
+    useEffect(() => {
+        let mounted = true;
+        const loadPic = async () => {
+            if (profile?.hasProfilePicture) {
+                const url = await getProfilePictureUrl();
+                if (mounted && url) {
+                    setProfilePicUrl(url);
+                }
+            }
+        };
+        loadPic();
+        return () => { mounted = false; };
+    }, [profile?.hasProfilePicture, profile?.profilePictureUpdatedAt, getProfilePictureUrl]);
+
+    // Fetch analytics when Analytics tab is opened
+    useEffect(() => {
+        if (activeTab !== 'analytics' || analytics !== null) return;
+        setAnalyticsLoading(true);
+        fetch(`${API_BASE}/api/player/profile-analytics`, {
+            credentials: 'include',
+        })
+            .then(r => r.json())
+            .then(data => {
+                setAnalytics(data.data?.analytics || null);
+                setAnalyticsLoading(false);
+            })
+            .catch(() => setAnalyticsLoading(false));
+    }, [activeTab, analytics, API_BASE]);
 
     const handleLogout = async () => {
         await logout();
@@ -152,6 +193,12 @@ export default function DashboardPage() {
                     >
                         Perfil
                     </button>
+                    <button
+                        className={`dashboard-tab ${activeTab === 'analytics' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('analytics')}
+                    >
+                        Analytics
+                    </button>
                 </nav>
 
                 {/* Tab Content */}
@@ -160,8 +207,12 @@ export default function DashboardPage() {
                     {activeTab === 'overview' && (
                         <div className="dashboard-overview">
                             <div className="profile-card">
-                                <div className="profile-avatar">
-                                    {user.name.charAt(0).toUpperCase()}
+                                <div className="profile-avatar" style={{ overflow: 'hidden' }}>
+                                    {profilePicUrl ? (
+                                        <img src={profilePicUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        user.name.charAt(0).toUpperCase()
+                                    )}
                                 </div>
                                 <div className="profile-info">
                                     <h2>{user.name}</h2>
@@ -221,7 +272,7 @@ export default function DashboardPage() {
                             ) : !profile || Object.keys(profile).length === 0 ? (
                                 <div className="empty-state">
                                     <p>Você ainda não configurou seu perfil atlético.</p>
-                                    <button className="btn-primary" onClick={() => navigate('/profile')} style={{ marginTop: '1rem' }}>
+                                    <button className="btn-create-profile" onClick={() => navigate('/profile')}>
                                         Criar Perfil
                                     </button>
                                 </div>
@@ -256,11 +307,89 @@ export default function DashboardPage() {
                                             <span className="readonly-stat-label">Alcance Bloqueio</span>
                                             <span className="readonly-stat-value">{profile.blockReachCm ? `${profile.blockReachCm} cm` : 'N/A'}</span>
                                         </div>
+
+                                        {(profile.currentTeamName || profile.currentTeamCountry || profile.currentTeam) && (
+                                            <div className="readonly-stat readonly-stat-wide">
+                                                <span className="readonly-stat-label">Time Atual</span>
+                                                <span className="readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    {(() => {
+                                                        const country = profile.currentTeamCountry;
+                                                        const imgUrl = country ? getNationalityFlagUrl(country, '32x24') : null;
+                                                        return (
+                                                            <>
+                                                                {imgUrl && <img src={imgUrl} alt="" style={{ width: 24, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
+                                                                {profile.currentTeamName || profile.currentTeam || 'N/A'}
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        <div className="readonly-stat readonly-stat-wide">
+                                            <span className="readonly-stat-label">Nacionalidade</span>
+                                            <span className="readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {(() => {
+                                                    const imgUrl = getNationalityFlagUrl(profile.nationality, '32x24');
+                                                    return imgUrl
+                                                        ? <><img src={imgUrl} alt="" style={{ width: 24, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} /> {profile.nationality}</>
+                                                        : profile.nationality || 'N/A';
+                                                })()}
+                                            </span>
+                                        </div>
+                                        <div className="readonly-stat readonly-stat-wide">
+                                            <span className="readonly-stat-label">Segunda Nacionalidade</span>
+                                            <span className="readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {(() => {
+                                                    if (!profile.secondNationality) return 'N/A';
+                                                    const imgUrl = getNationalityFlagUrl(profile.secondNationality, '32x24');
+                                                    return imgUrl
+                                                        ? <><img src={imgUrl} alt="" style={{ width: 24, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} /> {profile.secondNationality}</>
+                                                        : profile.secondNationality;
+                                                })()}
+                                            </span>
+                                        </div>
+                                        <div className="readonly-stat readonly-stat-wide">
+                                            <span className="readonly-stat-label">Idioma Nativo</span>
+                                            <span className="readonly-stat-value">{profile.nativeLanguage || 'N/A'}</span>
+                                        </div>
                                         <div className="readonly-stat readonly-stat-wide">
                                             <span className="readonly-stat-label">WhatsApp</span>
                                             <span className="readonly-stat-value">{profile.whatsappNumber || 'N/A'}</span>
                                         </div>
                                     </div>
+
+                                    {(profile.nativeLanguage || (profile.otherLanguages && profile.otherLanguages.length > 0)) && (
+                                        <div className="readonly-section">
+                                            <h3 className="readonly-section-title">Idiomas</h3>
+                                            <ul className="readonly-list">
+                                                {profile.nativeLanguage && (() => {
+                                                    const imgUrl = getLanguageFlagUrl(profile.nativeLanguage, '32x24');
+                                                    return (
+                                                        <li>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                {imgUrl && <img src={imgUrl} alt="" style={{ width: 22, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
+                                                                <strong>{profile.nativeLanguage}</strong>
+                                                            </span>
+                                                            <span className="readonly-list-sub">Nativo</span>
+                                                        </li>
+                                                    );
+                                                })()}
+                                                {(profile.otherLanguages || []).map((item, index) => {
+                                                    const imgUrl = getLanguageFlagUrl(item.name, '32x24');
+                                                    return (
+                                                        <li key={index}>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                {imgUrl && <img src={imgUrl} alt="" style={{ width: 22, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
+                                                                <strong>{item.name}</strong>
+                                                            </span>
+                                                            <span className="readonly-list-sub">{item.level}</span>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
 
                                     {profile.documents && profile.documents.length > 0 && (
                                         <div className="readonly-section">
@@ -350,6 +479,147 @@ export default function DashboardPage() {
                                         </div>
                                     )}
                                 </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Analytics Tab */}
+                    {activeTab === 'analytics' && (
+                        <div className="dashboard-profile">
+                            <div className="section-header" style={{ marginBottom: '1.5rem' }}>
+                                <h2>Analytics do Perfil</h2>
+                            </div>
+
+                            {/* Public Profile URL Card */}
+                            {publicProfileUrl ? (
+                                <div style={{
+                                    background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+                                    borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '1.5rem',
+                                    display: 'flex', flexDirection: 'column', gap: '0.6rem',
+                                }}>
+                                    <span style={{
+                                        fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+                                        letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)'
+                                    }}>
+                                        Seu Link Público
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <span style={{
+                                            flex: 1, fontSize: '0.88rem', color: '#a5b4fc',
+                                            wordBreak: 'break-all', fontFamily: 'monospace'
+                                        }}>
+                                            {publicProfileUrl}
+                                        </span>
+                                        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                                            <button
+                                                onClick={async () => {
+                                                    try { await navigator.clipboard.writeText(publicProfileUrl); } catch { }
+                                                    setAnalyticsCopied(true);
+                                                    setTimeout(() => setAnalyticsCopied(false), 2500);
+                                                }}
+                                                style={{
+                                                    background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.25)',
+                                                    color: '#a5b4fc', padding: '0.35rem 0.8rem', borderRadius: '8px',
+                                                    cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
+                                                }}
+                                            >
+                                                {analyticsCopied ? '✅ Copiado' : '📋 Copiar'}
+                                            </button>
+                                            <button
+                                                onClick={() => window.open(publicProfileUrl, '_blank')}
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                                                    color: '#fff', padding: '0.35rem 0.8rem', borderRadius: '8px',
+                                                    cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
+                                                }}
+                                            >
+                                                Abrir ↗
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="empty-state" style={{ marginBottom: '1rem' }}>
+                                    <p>Salve seu perfil primeiro para gerar seu link público.</p>
+                                </div>
+                            )}
+
+                            {analyticsLoading ? (
+                                <div className="loading-state">
+                                    <div className="auth-loading-spinner" />
+                                    <p>Carregando analytics...</p>
+                                </div>
+                            ) : !analytics ? (
+                                <div className="empty-state">
+                                    <p>Nenhum dado disponível ainda. Compartilhe seu perfil público para começar a rastrear visitas.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <div className="readonly-stats-grid">
+                                        <div className="readonly-stat">
+                                            <span className="readonly-stat-label">Total Visitas</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.totalViews ?? 0}</span>
+                                        </div>
+                                        <div className="readonly-stat">
+                                            <span className="readonly-stat-label">Visitantes Únicos</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.uniqueVisitors ?? 0}</span>
+                                        </div>
+                                        <div className="readonly-stat">
+                                            <span className="readonly-stat-label">Últimos 7 dias</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.last7DaysViews ?? 0}</span>
+                                        </div>
+                                        <div className="readonly-stat">
+                                            <span className="readonly-stat-label">Últimos 30 dias</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.last30DaysViews ?? 0}</span>
+                                        </div>
+                                    </div>
+
+                                    {analytics.topCities?.length > 0 && (
+                                        <div className="readonly-section">
+                                            <h3 className="readonly-section-title">Top Cidades</h3>
+                                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                                {analytics.topCities.map((c, i) => (
+                                                    <li key={i} style={{
+                                                        display: 'flex', justifyContent: 'space-between',
+                                                        padding: '0.45rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                                        fontSize: '0.88rem', color: 'rgba(255,255,255,0.8)'
+                                                    }}>
+                                                        <span>{c.city || 'Unknown'}{c.country ? ` · ${c.country}` : ''}</span>
+                                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{c.views}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {analytics.topCountries?.length > 0 && (
+                                        <div className="readonly-section">
+                                            <h3 className="readonly-section-title">Top Países</h3>
+                                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                                {analytics.topCountries.map((c, i) => (
+                                                    <li key={i} style={{
+                                                        display: 'flex', justifyContent: 'space-between',
+                                                        padding: '0.45rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                                        fontSize: '0.88rem', color: 'rgba(255,255,255,0.8)'
+                                                    }}>
+                                                        <span>{c.country || 'Unknown'}</span>
+                                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{c.views}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {analytics && (
+                                <button
+                                    className="refresh-btn"
+                                    style={{ marginTop: '1.5rem' }}
+                                    onClick={() => setAnalytics(null)}
+                                >
+                                    🔄 Atualizar
+                                </button>
                             )}
                         </div>
                     )}
