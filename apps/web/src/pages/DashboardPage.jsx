@@ -27,8 +27,17 @@ export default function DashboardPage() {
     const API_BASE = import.meta.env.VITE_API_URL || 'https://players-on-api.volleyplusapp.workers.dev';
     const profileSlug = profile?.slug;
 
-    // We use a cloud URL for sharing, since users expect to copy the live public link even when testing/saving.
-    let FRONTEND_URL_RAW = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    const DEFAULT_PUBLIC_FRONTEND_URL = 'https://players-on.pages.dev';
+    const frontendEnvUrl = (import.meta.env.VITE_FRONTEND_URL || '').trim();
+    const browserOrigin = window.location.origin?.trim();
+
+    // Always prefer the current app origin so "Abrir" points to the active environment with the athlete data.
+    let FRONTEND_URL_RAW = browserOrigin || DEFAULT_PUBLIC_FRONTEND_URL;
+
+    // Allow explicit override only when it is a valid non-empty value.
+    if (frontendEnvUrl && frontendEnvUrl !== 'undefined' && frontendEnvUrl !== 'null') {
+        FRONTEND_URL_RAW = frontendEnvUrl;
+    }
     if (!FRONTEND_URL_RAW.startsWith('http')) {
         FRONTEND_URL_RAW = `https://${FRONTEND_URL_RAW}`;
     }

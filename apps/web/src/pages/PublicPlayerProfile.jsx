@@ -29,7 +29,15 @@ export default function PublicPlayerProfile() {
     const [profilePicUrl, setProfilePicUrl] = useState(null);
     const [shareCopied, setShareCopied] = useState(false);
 
-    let FRONTEND_URL_RAW = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    const DEFAULT_PUBLIC_FRONTEND_URL = 'https://players-on.pages.dev';
+    const frontendEnvUrl = (import.meta.env.VITE_FRONTEND_URL || '').trim();
+    const browserOrigin = window.location.origin?.trim();
+
+    let FRONTEND_URL_RAW = browserOrigin || DEFAULT_PUBLIC_FRONTEND_URL;
+
+    if (frontendEnvUrl && frontendEnvUrl !== 'undefined' && frontendEnvUrl !== 'null') {
+        FRONTEND_URL_RAW = frontendEnvUrl;
+    }
     if (!FRONTEND_URL_RAW.startsWith('http')) {
         FRONTEND_URL_RAW = `https://${FRONTEND_URL_RAW}`;
     }
