@@ -29,7 +29,11 @@ export default function PublicPlayerProfile() {
     const [profilePicUrl, setProfilePicUrl] = useState(null);
     const [shareCopied, setShareCopied] = useState(false);
 
-    const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    let FRONTEND_URL_RAW = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    if (!FRONTEND_URL_RAW.startsWith('http')) {
+        FRONTEND_URL_RAW = `https://${FRONTEND_URL_RAW}`;
+    }
+    const FRONTEND_URL = FRONTEND_URL_RAW.endsWith('/') ? FRONTEND_URL_RAW.slice(0, -1) : FRONTEND_URL_RAW;
     const profileUrl = `${FRONTEND_URL}/p/${slug}`;
 
     useEffect(() => {

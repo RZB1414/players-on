@@ -28,7 +28,11 @@ export default function DashboardPage() {
     const profileSlug = profile?.slug;
 
     // We use a cloud URL for sharing, since users expect to copy the live public link even when testing/saving.
-    const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    let FRONTEND_URL_RAW = import.meta.env.VITE_FRONTEND_URL || 'https://players-on.pages.dev';
+    if (!FRONTEND_URL_RAW.startsWith('http')) {
+        FRONTEND_URL_RAW = `https://${FRONTEND_URL_RAW}`;
+    }
+    const FRONTEND_URL = FRONTEND_URL_RAW.endsWith('/') ? FRONTEND_URL_RAW.slice(0, -1) : FRONTEND_URL_RAW;
     const publicProfileUrl = profileSlug ? `${FRONTEND_URL}/p/${profileSlug}` : null;
 
     useEffect(() => {
