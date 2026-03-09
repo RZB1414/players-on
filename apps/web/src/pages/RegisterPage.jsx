@@ -37,12 +37,12 @@ export default function RegisterPage() {
         setError('');
 
         if (password !== confirmPassword) {
-            setError('As senhas não coincidem');
+            setError('Passwords do not match');
             return;
         }
 
         if (passwordStrength.passed < 5) {
-            setError('A senha não atende todos os requisitos');
+            setError('Password does not meet all requirements');
             return;
         }
 
@@ -52,10 +52,10 @@ export default function RegisterPage() {
             await register(name, email, password);
             navigate('/login', {
                 replace: true,
-                state: { message: 'Conta criada com sucesso! Faça login.' },
+                state: { message: 'Account created successfully! Please sign in.' },
             });
         } catch (err) {
-            setError(err.message || 'Erro ao criar conta');
+            setError(err.message || 'Error creating account');
         } finally {
             setIsSubmitting(false);
         }
@@ -70,7 +70,7 @@ export default function RegisterPage() {
                             <span className="auth-logo-icon">⚡</span>
                             <h1>Players On</h1>
                         </div>
-                        <p className="auth-subtitle">Crie sua conta</p>
+                        <p className="auth-subtitle">Create your account</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="auth-form">
@@ -82,13 +82,13 @@ export default function RegisterPage() {
                         )}
 
                         <div className="auth-field">
-                            <label htmlFor="register-name">Nome</label>
+                            <label htmlFor="register-name">Name</label>
                             <input
                                 id="register-name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Seu nome"
+                                placeholder="Your name"
                                 required
                                 minLength={2}
                                 maxLength={100}
@@ -104,7 +104,7 @@ export default function RegisterPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="seu@email.com"
+                                placeholder="your@email.com"
                                 required
                                 autoComplete="email"
                                 disabled={isSubmitting}
@@ -112,13 +112,13 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="auth-field">
-                            <label htmlFor="register-password">Senha</label>
+                            <label htmlFor="register-password">Password</label>
                             <input
                                 id="register-password"
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Mínimo 12 caracteres"
+                                placeholder="Minimum 12 characters"
                                 required
                                 autoComplete="new-password"
                                 disabled={isSubmitting}
@@ -133,19 +133,19 @@ export default function RegisterPage() {
                                     </div>
                                     <ul className="password-requirements">
                                         <li className={passwordStrength.checks.length ? 'met' : ''}>
-                                            12+ caracteres
+                                            12+ characters
                                         </li>
                                         <li className={passwordStrength.checks.uppercase ? 'met' : ''}>
-                                            1 letra maiúscula
+                                            1 uppercase letter
                                         </li>
                                         <li className={passwordStrength.checks.lowercase ? 'met' : ''}>
-                                            1 letra minúscula
+                                            1 lowercase letter
                                         </li>
                                         <li className={passwordStrength.checks.number ? 'met' : ''}>
-                                            1 número
+                                            1 number
                                         </li>
                                         <li className={passwordStrength.checks.symbol ? 'met' : ''}>
-                                            1 símbolo
+                                            1 symbol
                                         </li>
                                     </ul>
                                 </div>
@@ -153,19 +153,19 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="auth-field">
-                            <label htmlFor="register-confirm">Confirmar Senha</label>
+                            <label htmlFor="register-confirm">Confirm Password</label>
                             <input
                                 id="register-confirm"
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Repita a senha"
+                                placeholder="Repeat password"
                                 required
                                 autoComplete="new-password"
                                 disabled={isSubmitting}
                             />
                             {confirmPassword && password !== confirmPassword && (
-                                <span className="auth-field-error">As senhas não coincidem</span>
+                                <span className="auth-field-error">Passwords do not match</span>
                             )}
                         </div>
 
@@ -177,19 +177,19 @@ export default function RegisterPage() {
                             {isSubmitting ? (
                                 <span className="auth-button-loading">
                                     <span className="auth-spinner" />
-                                    Criando conta...
+                                    Creating account...
                                 </span>
                             ) : (
-                                'Criar Conta'
+                                'Sign Up'
                             )}
                         </button>
                     </form>
 
                     <div className="auth-footer">
                         <p>
-                            Já tem uma conta?{' '}
+                            Already have an account?{' '}
                             <Link to="/login" className="auth-link">
-                                Entrar
+                                Sign In
                             </Link>
                         </p>
                     </div>

@@ -21,7 +21,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                 }
             }, 100);
         } else {
-            setError(result.error || 'Falha ao carregar o documento.');
+            setError(result.error || 'Failed to load document.');
         }
     };
 
@@ -55,7 +55,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
             }
         } catch (err) {
             console.error(err);
-            alert('Não foi possível forçar a rotação no seu dispositivo. Use o scroll horizontal nativo da visualização caso esteja no celular.');
+            alert('Could not force rotation on your device. Use native horizontal scrolling if you are on mobile.');
         }
     };
 
@@ -67,17 +67,17 @@ export default function DocumentUpload({ documents, readOnly = false }) {
         setError('');
 
         if (file.type !== 'application/pdf') {
-            setError('Por favor, selecione apenas arquivos PDF.');
+            setError('Please, select PDF files only.');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            setError('Arquivo muito grande. O limite máximo é de 5MB.');
+            setError('File too large. Maximum size is 5MB.');
             return;
         }
 
         if (documents.length >= 10) {
-            setError('Você já atingiu o limite de 10 documentos.');
+            setError('You have reached the limit of 10 documents.');
             return;
         }
 
@@ -87,7 +87,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
         setUploading(false);
 
         if (!result.success) {
-            setError(result.error || 'Falha ao enviar o documento.');
+            setError(result.error || 'Failed to upload document.');
         }
 
         // Reset file input
@@ -97,12 +97,12 @@ export default function DocumentUpload({ documents, readOnly = false }) {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Tem certeza que deseja excluir este documento?')) return;
+        if (!window.confirm('Are you sure you want to delete this document?')) return;
 
         setError('');
         const result = await deleteDocument(id);
         if (!result.success) {
-            setError(result.error || 'Falha ao excluir o documento.');
+            setError(result.error || 'Failed to delete document.');
         }
     };
 
@@ -161,7 +161,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                         }}
                     >
                         <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>＋</span>
-                        {uploading ? 'Enviando...' : `Adicionar PDF (${documents.length}/10)`}
+                        {uploading ? 'Uploading...' : `Add PDF (${documents.length}/10)`}
                     </label>
                 </div>
             )}
@@ -225,7 +225,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
 
                             {/* Date */}
                             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)' }}>
-                                Enviado em {new Date(doc.uploadedAt).toLocaleDateString('pt-BR')}
+                                Uploaded on {new Date(doc.uploadedAt).toLocaleDateString('pt-BR')}
                             </span>
 
                             {/* Actions */}
@@ -256,10 +256,11 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                                         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
                                     }}
                                 >
-                                    Abrir ↗
+                                    Open ↗
                                 </button>
                                 {!readOnly && (
                                     <button
+                                        type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleDelete(doc.id);
@@ -283,9 +284,9 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                                             e.currentTarget.style.color = 'rgba(239, 68, 68, 0.7)';
                                             e.currentTarget.style.background = 'none';
                                         }}
-                                        title="Excluir arquivo"
+                                        title="Delete file"
                                     >
-                                        Excluir
+                                        Delete
                                     </button>
                                 )}
                             </div>
@@ -323,7 +324,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                         }}
                     >
                         <span style={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
-                            Visualizando Documento
+                            Viewing Document
                         </span>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
@@ -340,7 +341,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                                     background: 'rgba(255,255,255,0.1)',
                                 }}
                             >
-                                ⛶ Paisagem
+                                ⛶ Landscape
                             </button>
                             <button
                                 type="button"
@@ -356,7 +357,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                                     background: 'rgba(255,80,80,0.1)',
                                 }}
                             >
-                                ✕ Fechar
+                                ✕ Close
                             </button>
                         </div>
                     </div>
@@ -370,7 +371,7 @@ export default function DocumentUpload({ documents, readOnly = false }) {
                     >
                         <iframe
                             src={viewerUrl}
-                            title="Documento PDF"
+                            title="PDF Document"
                             style={{
                                 display: 'block',
                                 width: '100%',

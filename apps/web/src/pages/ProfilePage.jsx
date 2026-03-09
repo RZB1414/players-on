@@ -33,13 +33,16 @@ export default function ProfilePage() {
         otherLanguages: [],
         currentTeam: '',
         currentTeamCountry: '',
+        agency: '',
+        agencyWhatsapp: '',
         achievements: [],
         individualAwards: []
     });
 
-    // Sync formData when profile loads or updates
+    // Sync formData only once when profile loads the first time
+    const [isInitialized, setIsInitialized] = useState(false);
     useEffect(() => {
-        if (profile && Object.keys(profile).length > 0) {
+        if (profile && Object.keys(profile).length > 0 && !isInitialized) {
             setFormData({
                 name: profile.name || '',
                 position: profile.position || '',
@@ -55,11 +58,14 @@ export default function ProfilePage() {
                 otherLanguages: profile.otherLanguages || [],
                 currentTeam: profile.currentTeam || '',
                 currentTeamCountry: profile.currentTeamCountry || '',
+                agency: profile.agency || '',
+                agencyWhatsapp: profile.agencyWhatsapp || '',
                 achievements: profile.achievements || [],
                 individualAwards: profile.individualAwards || [],
             });
+            setIsInitialized(true);
         }
-    }, [profile]);
+    }, [profile, isInitialized]);
 
     const handleSave = async () => {
         setSubmitting(true);
@@ -77,7 +83,7 @@ export default function ProfilePage() {
     };
 
     if (loading && !profile) {
-        return <div className="profile-loading">Carregando perfil...</div>;
+        return <div className="profile-loading">Loading profile...</div>;
     }
 
     return (
@@ -91,7 +97,7 @@ export default function ProfilePage() {
                     <div className="dashboard-header-right">
                         <span className="dashboard-user-name">{user?.name}</span>
                         <button onClick={logout} className="dashboard-logout-btn">
-                            Sair
+                            Sign Out
                         </button>
                     </div>
                 </header>
@@ -112,18 +118,18 @@ export default function ProfilePage() {
                         onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
                         onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
                     >
-                        ← Voltar ao Dashboard
+                        ← Back to Dashboard
                     </div>
                     <header className="profile-header">
-                        <h1>Meu Perfil Atlético</h1>
-                        <p>Complete suas informações para se destacar.</p>
+                        <h1>My Athletic Profile</h1>
+                        <p>Complete your information to stand out.</p>
                     </header>
 
                     {error && (
                         <div className="alert alert-error">
                             <div className="alert-icon">⚠️</div>
                             <div className="alert-content">
-                                <strong>Foram encontrados os seguintes erros:</strong>
+                                <strong>The following errors were found:</strong>
                                 <ul>
                                     {Array.from(new Set(error.split('..').map(err => err.trim().replace(/^\./, '').replace(/\.$/, '')).filter(Boolean))).map((err, i) => (
                                         <li key={i}>{err}</li>
@@ -136,7 +142,7 @@ export default function ProfilePage() {
                         <div className="alert alert-error">
                             <div className="alert-icon">⚠️</div>
                             <div className="alert-content">
-                                <strong>Erro ao salvar:</strong>
+                                <strong>Error saving:</strong>
                                 <ul>
                                     {Array.from(new Set(submitError.split('..').map(err => err.trim().replace(/^\./, '').replace(/\.$/, '')).filter(Boolean))).map((err, i) => (
                                         <li key={i}>{err}</li>
@@ -147,94 +153,96 @@ export default function ProfilePage() {
                     )}
                     {submitSuccess && <div className="alert alert-success">{submitSuccess}</div>}
 
-                    <section className="profile-section">
-                        <h2>Foto de Perfil</h2>
-                        <ProfilePictureUpload />
-                    </section>
+                    <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                        <section className="profile-section">
+                            <h2>Profile Picture</h2>
+                            <ProfilePictureUpload />
+                        </section>
 
-                    <section className="profile-section">
-                        <h2>Informações Pessoais</h2>
-                        <PersonalInfoForm formData={formData} setFormData={setFormData} />
-                    </section>
+                        <section className="profile-section">
+                            <h2>Personal Information</h2>
+                            <PersonalInfoForm formData={formData} setFormData={setFormData} />
+                        </section>
 
-                    <section className="profile-section">
-                        <h2>Idiomas</h2>
-                        <LanguageList
-                            nativeLanguage={formData.nativeLanguage}
-                            setNativeLanguage={(val) => setFormData({ ...formData, nativeLanguage: val })}
-                            items={formData.otherLanguages}
-                            setItems={(newItems) => setFormData({ ...formData, otherLanguages: newItems })}
-                        />
-                    </section>
+                        <section className="profile-section">
+                            <h2>Languages</h2>
+                            <LanguageList
+                                nativeLanguage={formData.nativeLanguage}
+                                setNativeLanguage={(val) => setFormData({ ...formData, nativeLanguage: val })}
+                                items={formData.otherLanguages}
+                                setItems={(newItems) => setFormData({ ...formData, otherLanguages: newItems })}
+                            />
+                        </section>
 
-                    <section className="profile-section">
-                        <h2>Conquistas</h2>
-                        <DynamicList
-                            items={formData.achievements}
-                            setItems={(newItems) => setFormData({ ...formData, achievements: newItems })}
-                            type="achievement"
-                        />
-                    </section>
+                        <section className="profile-section">
+                            <h2>Achievements</h2>
+                            <DynamicList
+                                items={formData.achievements}
+                                setItems={(newItems) => setFormData({ ...formData, achievements: newItems })}
+                                type="achievement"
+                            />
+                        </section>
 
-                    <section className="profile-section">
-                        <h2>Premiações Individuais</h2>
-                        <DynamicList
-                            items={formData.individualAwards}
-                            setItems={(newItems) => setFormData({ ...formData, individualAwards: newItems })}
-                            type="award"
-                        />
-                    </section>
+                        <section className="profile-section">
+                            <h2>Individual Awards</h2>
+                            <DynamicList
+                                items={formData.individualAwards}
+                                setItems={(newItems) => setFormData({ ...formData, individualAwards: newItems })}
+                                type="award"
+                            />
+                        </section>
 
-                    <hr className="section-divider" />
+                        <hr className="section-divider" />
 
-                    <section className="profile-section documents-section">
-                        <h2>Documentos (Scout)</h2>
-                        <p className="section-description">Faça upload de até 10 PDFs (máx 5MB cada) para comprovar suas estatísticas.</p>
-                        <DocumentUpload documents={profile?.documents || []} />
-                    </section>
+                        <section className="profile-section documents-section">
+                            <h2>Documents (Scouting)</h2>
+                            <p className="section-description">Upload up to 10 PDFs (max 5MB each) to prove your statistics.</p>
+                            <DocumentUpload documents={profile?.documents || []} />
+                        </section>
 
-                    <div style={{ marginTop: '2rem' }}>
-                        <button
-                            onClick={handleSave}
-                            disabled={submitting}
-                            style={{
-                                width: '100%',
-                                padding: '0.9rem',
-                                background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
-                                border: '1px dashed rgba(255, 255, 255, 0.2)',
-                                borderRadius: '12px',
-                                color: 'rgba(255,255,255,0.7)',
-                                fontSize: '0.95rem',
-                                fontWeight: 500,
-                                cursor: submitting ? 'not-allowed' : 'pointer',
-                                transition: 'all 0.3s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.5rem',
-                                letterSpacing: '0.3px',
-                                opacity: submitting ? 0.5 : 1,
-                            }}
-                            onMouseOver={(e) => {
-                                if (!submitting) {
-                                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))';
-                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
-                                    e.currentTarget.style.color = '#fff';
-                                    e.currentTarget.style.transform = 'translateY(-1px)';
-                                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                                }
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))';
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                                e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'none';
-                            }}
-                        >
-                            {submitting ? 'Salvando...' : '💾 Salvar Perfil'}
-                        </button>
-                    </div>
+                        <div style={{ marginTop: '2rem' }}>
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.9rem',
+                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+                                    border: '1px dashed rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '12px',
+                                    color: 'rgba(255,255,255,0.7)',
+                                    fontSize: '0.95rem',
+                                    fontWeight: 500,
+                                    cursor: submitting ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    letterSpacing: '0.3px',
+                                    opacity: submitting ? 0.5 : 1,
+                                }}
+                                onMouseOver={(e) => {
+                                    if (!submitting) {
+                                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))';
+                                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+                                        e.currentTarget.style.color = '#fff';
+                                        e.currentTarget.style.transform = 'translateY(-1px)';
+                                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                                    }
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                {submitting ? 'Saving...' : 'Save Profile'}
+                            </button>
+                        </div>
+                    </form>
 
                 </main>
             </div>

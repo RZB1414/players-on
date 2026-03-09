@@ -32,12 +32,12 @@ export default function ProfilePictureUpload({ readOnly = false }) {
 
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
-            setError('Formato inválido. Use JPEG, PNG ou WEBP.');
+            setError('Invalid format. Use JPEG, PNG or WEBP.');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            setError('Arquivo muito grande. Limite de 5MB.');
+            setError('File too large. Maximum size is 5MB.');
             return;
         }
 
@@ -46,7 +46,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
         setUploading(false);
 
         if (!result.success) {
-            setError(result.error || 'Falha ao enviar a foto.');
+            setError(result.error || 'Failed to upload photo.');
         }
 
         if (fileInputRef.current) {
@@ -90,7 +90,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                         color: 'white',
                         fontSize: '0.8rem'
                     }}>
-                        Enviando...
+                        Uploading...
                     </div>
                 )}
             </div>
@@ -130,7 +130,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                             }
                         }}
                     >
-                        {previewUrl ? 'Alterar Foto' : 'Adicionar Foto'}
+                        {previewUrl ? 'Change Picture' : 'Add Picture'}
                     </label>
                 </div>
             )}

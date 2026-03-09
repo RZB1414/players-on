@@ -38,23 +38,23 @@ export default function DynamicList({ items = [], setItems, type }) {
                         type="button"
                         className="btn-danger remove-btn-absolute"
                         onClick={() => handleRemove(index)}
-                        title="Remover item"
+                        title="Remove item"
                     >
                         &times;
                     </button>
                     <div className="item-row">
                         <div className="form-group">
-                            <label>Colocação</label>
+                            <label>Title/Placement</label>
                             <input
                                 type="text"
                                 value={item.title}
                                 onChange={(e) => handleChange(index, 'title', e.target.value)}
-                                placeholder={isAchievement ? "Ex: Campeão" : "Ex: Melhor Sacador"}
+                                placeholder={isAchievement ? "Ex: Champion" : "Ex: Best Server"}
                                 maxLength={MAX_TITLE_LEN}
                             />
                         </div>
                         <div className="form-group">
-                            <label>Campeonato / Time</label>
+                            <label>Championship / Team</label>
                             <input
                                 type="text"
                                 value={item.championship}
@@ -64,7 +64,7 @@ export default function DynamicList({ items = [], setItems, type }) {
                             />
                         </div>
                         <div className="form-group year-group">
-                            <label>Ano</label>
+                            <label>Year</label>
                             <input
                                 type="number"
                                 value={item.year}
@@ -115,11 +115,11 @@ export default function DynamicList({ items = [], setItems, type }) {
                     }}
                 >
                     <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>＋</span>
-                    Adicionar outra {isAchievement ? 'Conquista' : 'Premiação'}
+                    Add another {isAchievement ? 'Achievement' : 'Award'}
                 </button>
             )}
             {items.length >= MAX_ITEMS && (
-                <p className="limit-warning">Limite de {MAX_ITEMS} itens atingido.</p>
+                <p className="limit-warning">Limit of {MAX_ITEMS} items reached.</p>
             )}
         </div>
     );

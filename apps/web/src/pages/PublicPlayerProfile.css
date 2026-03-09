@@ -64,51 +64,51 @@
 
 /* ── Hero ──────────────────────────── */
 .public-hero {
+    position: relative;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+    background-size: cover;
+    background-position: center 20%;
+    background-repeat: no-repeat;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    padding: 2.5rem 1.25rem 2rem;
-}
-
-.public-hero-inner {
-    max-width: 900px;
-    margin: 0 auto;
+    min-height: 280px;
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.public-avatar {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.25rem;
-    font-weight: 800;
-    flex-shrink: 0;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 8px 24px rgba(99, 102, 241, 0.25);
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3rem 1.25rem 2.5rem;
     overflow: hidden;
 }
 
-.public-avatar img {
+.public-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(10, 10, 26, 0.95) 100%);
+    z-index: 1;
+}
+
+.public-hero-inner {
+    position: relative;
+    z-index: 2;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
 }
 
 .public-hero-info {
     flex: 1;
     min-width: 200px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .public-name {
-    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
     font-weight: 800;
-    margin: 0 0 0.25rem;
-    background: linear-gradient(135deg, #e0e7ff, #c4b5fd);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem;
+    background: linear-gradient(135deg, #ffffff, #e2e8f0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -167,46 +167,84 @@
     margin: 0 0 1rem;
 }
 
-/* ── Stats Grid ────────────────────── */
-.public-stats-grid {
+/* ── Profile Readonly Details – Dashboard Sync ── */
+.public-readonly-details {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 2rem;
+}
+
+.public-readonly-stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.6rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
-.public-stat-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
-    padding: 0.85rem 1rem;
+.public-readonly-stat {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    transition: border-color 0.2s;
+    gap: 0.15rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.public-stat-card:hover {
-    border-color: rgba(129, 140, 248, 0.25);
-}
-
-.public-stat-label {
+.public-readonly-stat-label {
     font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.public-readonly-stat-value {
+    font-size: 0.9rem;
     font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.public-readonly-stat-wide {
+    grid-column: 1 / -1;
+}
+
+.public-readonly-section {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.public-readonly-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgba(255, 255, 255, 0.38);
+    margin: 0 0 0.6rem;
 }
 
-.public-stat-value {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: #e0e7ff;
+.public-readonly-list {
+    list-style-type: disc;
+    padding-left: 1.2rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
 }
 
-.public-stat-value small {
-    font-size: 0.7rem;
-    font-weight: 500;
+.public-readonly-list li {
+    margin-bottom: 0.4rem;
+    font-size: 0.88rem;
+    line-height: 1.35;
+    display: flex;
+    flex-direction: column;
+}
+
+.public-readonly-list-sub {
+    font-size: 0.78rem;
     color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.1rem;
 }
 
 /* ── Lists (Achievements / Awards) ─── */
@@ -455,6 +493,20 @@
     margin: 0;
 }
 
+/* ── Footer Info ───────────────────── */
+.public-footer-info {
+    text-align: center;
+    padding: 2rem 0 1rem;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.public-updated-bottom {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
 /* ── Responsive ────────────────────── */
 @media (max-width: 600px) {
     .public-hero {
@@ -462,16 +514,15 @@
     }
 
     .public-hero-inner {
-        flex-direction: column;
-        text-align: center;
-        align-items: center;
+        align-items: flex-start;
+        text-align: left;
     }
 
     .public-container {
         padding: 1rem 1rem 3rem;
     }
 
-    .public-stats-grid {
+    .public-readonly-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -481,7 +532,7 @@
 }
 
 @media (min-width: 640px) {
-    .public-stats-grid {
+    .public-readonly-stats-grid {
         grid-template-columns: repeat(4, 1fr);
     }
 }

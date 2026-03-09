@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children }) {
         return (
             <div className="auth-loading">
                 <div className="auth-loading-spinner" />
-                <p>Verificando autenticação...</p>
+                <p>Verifying authentication...</p>
             </div>
         );
     }

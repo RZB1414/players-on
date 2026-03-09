@@ -53,6 +53,8 @@ export async function createOrUpdateProfile(userId, data, db) {
         nativeLanguage: sanitizeString(data.nativeLanguage),
         currentTeam: data.currentTeam ? sanitizeString(data.currentTeam).substring(0, 100) : null,
         currentTeamCountry: data.currentTeamCountry ? sanitizeString(data.currentTeamCountry).substring(0, 50) : null,
+        agency: data.agency ? sanitizeString(data.agency).substring(0, 100) : null,
+        agencyWhatsapp: data.agencyWhatsapp ? sanitizeString(data.agencyWhatsapp).trim() : null,
         updatedAt: new Date(),
     };
 
@@ -144,6 +146,8 @@ export async function getPublicProfileBySlug(slug, db) {
                 individualAwards: 1,
                 youtubeVideos: 1,
                 whatsappNumber: 1,
+                agency: 1,
+                agencyWhatsapp: 1,
                 hasProfilePicture: 1,
                 updatedAt: 1,
                 // Documents: include id+filename+objectKey (objectKey used internally, stripped before sending)
@@ -344,7 +348,7 @@ export async function getProfilePictureStream(userId, env, db) {
 
     const headers = new Headers();
     r2Object.writeHttpMetadata(headers);
-    headers.set('Cache-Control', 'public, max-age=3600');
+    headers.set('Cache-Control', 'private, max-age=3600');
 
     return {
         success: true,

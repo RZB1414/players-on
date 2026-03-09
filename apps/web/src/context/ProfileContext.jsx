@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { request as fetchApi } from '../utils/api';
 
@@ -26,7 +26,7 @@ export const ProfileProvider = ({ children }) => {
             const data = await fetchApi('/api/player/profile');
             setProfile(data.profile || {});
         } catch (err) {
-            setError(err.message || 'Falha ao carregar perfil');
+            setError(err.message || 'Failed to load profile');
         } finally {
             setLoading(false);
         }
@@ -34,6 +34,7 @@ export const ProfileProvider = ({ children }) => {
 
     const saveProfile = async (profileData) => {
         try {
+            console.log("[SAVE PROFILE] Data sent to backend:", JSON.stringify(profileData, null, 2));
             setLoading(true);
             setError(null);
             const data = await fetchApi('/api/player/profile', {
@@ -41,9 +42,11 @@ export const ProfileProvider = ({ children }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(profileData),
             });
+            console.log("[SAVE PROFILE] Success response:", data);
             setProfile(data.profile);
             return { success: true, message: data.message };
         } catch (err) {
+            console.error("[SAVE PROFILE] Failed with error:", err);
             setError(err.message);
             return { success: false, error: err.message };
         } finally {
@@ -114,7 +117,7 @@ export const ProfileProvider = ({ children }) => {
             const url = window.URL.createObjectURL(blob);
             return { success: true, url };
         } catch (err) {
-            setError(err.message || 'Falha ao abrir o documento');
+            setError(err.message || 'Failed to open document');
             return { success: false, error: err.message };
         } finally {
             setLoading(false);
@@ -150,10 +153,12 @@ export const ProfileProvider = ({ children }) => {
         }
     };
 
-    const getProfilePictureUrl = async () => {
+    const getProfilePictureUrl = useCallback(async () => {
         if (!profile || !profile.hasProfilePicture) return null;
         try {
-            const blob = await fetchApi('/api/player/profile-picture', {
+            // Append timestamp to prevent browser from serving previous user's cached blob
+            const timestamp = profile.profilePictureUpdatedAt ? new Date(profile.profilePictureUpdatedAt).getTime() : Date.now();
+            const blob = await fetchApi(`/api/player/profile-picture?t=${timestamp}`, {
                 method: 'GET',
                 responseType: 'blob'
             });
@@ -162,7 +167,7 @@ export const ProfileProvider = ({ children }) => {
             console.error("Failed to load profile picture", err);
             return null;
         }
-    };
+    }, [profile]);
 
     return (
         <ProfileContext.Provider

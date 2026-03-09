@@ -2,35 +2,30 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 const ALL_LANGUAGES = [
-    'Abecásio', 'Africânder', 'Albanês', 'Alemão', 'Amárico', 'Árabe', 'Armênio',
-    'Azerbaijano', 'Basco', 'Bengali', 'Bielorrusso', 'Birmanês', 'Bósnio',
-    'Búlgaro', 'Catalão', 'Cazaque', 'Cebuano', 'Chinês (Mandarim)', 'Chinês (Cantonês)',
-    'Coreano', 'Corso', 'Croata', 'Curdo', 'Dinamarquês', 'Eslovaco', 'Esloveno',
-    'Espanhol', 'Esperanto', 'Estoniano', 'Filipino', 'Finlandês', 'Francês',
-    'Frísio', 'Galego', 'Galês', 'Georgiano', 'Grego', 'Guzerate', 'Haitiano',
-    'Hauçá', 'Hebraico', 'Hindi', 'Holandês', 'Húngaro', 'Igbo', 'Indonésio',
-    'Inglês', 'Irlandês', 'Islandês', 'Italiano', 'Japonês', 'Javanês', 'Khmer',
-    'Kyrgyz', 'Laociano', 'Latim', 'Letão', 'Lituano', 'Luxemburguês',
-    'Macedônio', 'Malaio', 'Malaiala', 'Malgaxe', 'Maltês', 'Maori', 'Marata',
-    'Mongol', 'Nepalês', 'Norueguês', 'Oriá', 'Pachto', 'Panjabi', 'Persa',
-    'Polonês', 'Português', 'Romeno', 'Russo', 'Sérvio', 'Sindi', 'Cingalês',
-    'Somali', 'Suaíle', 'Sueco', 'Tadjique', 'Tailandês', 'Tâmil',
-    'Tcheco', 'Telugu', 'Tibetano', 'Turco', 'Turcomeno', 'Ucraniano', 'Uigur',
+    'Abkhazian', 'Afrikaans', 'Albanian', 'Amharic', 'Arabic', 'Armenian',
+    'Azerbaijani', 'Basque', 'Belarusian', 'Bengali', 'Bosnian', 'Bulgarian',
+    'Burmese', 'Catalan', 'Cantonese (Chinese)', 'Cebuano', 'Corsican', 'Croatian',
+    'Czech', 'Danish', 'Dutch', 'English', 'Esperanto', 'Estonian', 'Filipino',
+    'Finnish', 'French', 'Frisian', 'Galician', 'Georgian', 'German', 'Greek',
+    'Gujarati', 'Haitian Creole', 'Hausa', 'Hebrew', 'Hindi', 'Hungarian',
+    'Icelandic', 'Igbo', 'Indonesian', 'Irish', 'Italian', 'Japanese', 'Javanese',
+    'Kazakh', 'Khmer', 'Korean', 'Kurdish', 'Kyrgyz', 'Lao', 'Latin', 'Latvian',
+    'Lithuanian', 'Luxembourgish', 'Macedonian', 'Malagasy', 'Malay', 'Malayalam',
+    'Maltese', 'Mandarin (Chinese)', 'Maori', 'Marathi', 'Mongolian', 'Nepali',
+    'Norwegian', 'Odia', 'Pashto', 'Persian', 'Polish', 'Portuguese', 'Punjabi',
+    'Romanian', 'Russian', 'Serbian', 'Sindhi', 'Sinhala', 'Slovak', 'Slovenian',
+    'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tajik', 'Tamil', 'Telugu',
+    'Thai', 'Tibetan', 'Turkish', 'Turkmen', 'Ukrainian', 'Uyghur', 'Welsh'
 ];
 
 const LANGUAGE_ALIASES = {
-    'Bósnio': ['bosnia', 'bósnia'],
-    'Chinês (Mandarim)': ['mandarim', 'china'],
-    'Chinês (Cantonês)': ['cantones', 'cantonês', 'china'],
-    'Coreano': ['coreia', 'korean'],
-    'Espanhol': ['castelhano', 'america latina', 'espanha'],
-    'Estoniano': ['estonia', 'estônia'],
-    'Holandês': ['holanda', 'paises baixos', 'países baixos'],
-    'Inglês': ['americano', 'usa', 'eua', 'inglaterra', 'britanico'],
-    'Irlandês': ['irlanda'],
-    'Islandês': ['islandia', 'islândia'],
-    'Japonês': ['japao', 'japão'],
-    'Português': ['brasileiro', 'brasil', 'ptbr', 'pt-br', 'tuga'],
+    'Mandarin (Chinese)': ['mandarin', 'china', 'chinese'],
+    'Cantonese (Chinese)': ['cantonese', 'china', 'chinese'],
+    'French': ['francais', 'français'],
+    'German': ['deutsch'],
+    'Spanish': ['castellano', 'spain', 'latin america'],
+    'Italian': ['italiano'],
+    'Portuguese': ['brasil', 'brazilian', 'portugal', 'ptbr', 'pt-br']
 };
 
 
@@ -163,7 +158,7 @@ function LanguageSearch({ value, onChange }) {
                 onFocus={() => {
                     if (suggestions.length > 0) openDropdown();
                 }}
-                placeholder="Ex: Inglês"
+                placeholder="Ex: English"
                 autoComplete="off"
             />
             {typeof document !== 'undefined' && createPortal(dropdown, document.body)}
@@ -195,16 +190,16 @@ export default function LanguageList({ nativeLanguage = '', setNativeLanguage, i
             <div className="dynamic-list-item" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
                 <div className="item-row">
                     <div className="form-group" style={{ flex: 2, position: 'relative' }}>
-                        <label>Idioma Nativo</label>
+                        <label>Native Language</label>
                         <LanguageSearch
                             value={nativeLanguage}
                             onChange={(val) => setNativeLanguage && setNativeLanguage(val)}
                         />
                     </div>
                     <div className="form-group" style={{ flex: 1 }}>
-                        <label>Nível</label>
+                        <label>Level</label>
                         <div style={{ padding: '0.6rem 0.8rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>
-                            Nativo
+                            Native
                         </div>
                     </div>
                 </div>
@@ -217,29 +212,29 @@ export default function LanguageList({ nativeLanguage = '', setNativeLanguage, i
                         type="button"
                         className="btn-danger remove-btn-absolute"
                         onClick={() => handleRemove(index)}
-                        title="Remover idioma"
+                        title="Remove language"
                     >
                         &times;
                     </button>
                     <div className="item-row">
                         <div className="form-group" style={{ flex: 2, position: 'relative' }}>
-                            <label>Idioma</label>
+                            <label>Language</label>
                             <LanguageSearch
                                 value={item.name}
                                 onChange={(val) => handleChange(index, 'name', val)}
                             />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Nível</label>
+                            <label>Level</label>
                             <select
                                 value={item.level}
                                 onChange={(e) => handleChange(index, 'level', e.target.value)}
                             >
-                                <option value="" disabled>Selecione</option>
-                                <option value="Básico">Básico</option>
-                                <option value="Intermediário">Intermediário</option>
-                                <option value="Avançado">Avançado</option>
-                                <option value="Fluente">Fluente</option>
+                                <option value="" disabled>Select</option>
+                                <option value="Basic">Basic</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                                <option value="Fluent">Fluent</option>
                             </select>
                         </div>
                     </div>
@@ -279,11 +274,11 @@ export default function LanguageList({ nativeLanguage = '', setNativeLanguage, i
                     }}
                 >
                     <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>＋</span>
-                    Adicionar outro idioma
+                    Add another language
                 </button>
             )}
             {items.length >= MAX_ITEMS && (
-                <p className="limit-warning">Limite de {MAX_ITEMS} idiomas atingido.</p>
+                <p className="limit-warning">Limit of {MAX_ITEMS} languages reached.</p>
             )}
         </div>
     );

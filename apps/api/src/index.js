@@ -24,6 +24,7 @@ import {
     handleGetPublicProfile,
     handleGetPublicDocument,
     handleGetProfileAnalytics,
+    handleGetPublicProfilePicture
 } from './routes/publicPlayer.js';
 import { ensurePlayerIndexes } from './services/playerService.js';
 import { ensureAnalyticsIndexes } from './services/analyticsService.js';
@@ -89,7 +90,7 @@ export default {
                 }
             } catch (dbError) {
                 console.error('[DB_CONNECTION_ERROR]', dbError.message);
-                return withCors(errorResponse('Erro de conexão com o banco de dados', 503), corsHeaders);
+                return withCors(errorResponse('Database connection error', 503), corsHeaders);
             }
 
             let response;
@@ -116,7 +117,7 @@ export default {
             } else if (path.startsWith('/api/auth/sessions/') && method === 'DELETE') {
                 const sessionId = path.split('/api/auth/sessions/')[1];
                 if (!sessionId) {
-                    response = errorResponse('ID da sessão é obrigatório', 400);
+                    response = errorResponse('Session ID is required', 400);
                 } else {
                     response = await handleRevokeSession(request, env, db, sessionId);
                 }
@@ -136,14 +137,14 @@ export default {
             } else if (path.startsWith('/api/player/documents/') && method === 'GET') {
                 const documentId = path.split('/api/player/documents/')[1];
                 if (!documentId) {
-                    response = errorResponse('ID do documento é obrigatório', 400);
+                    response = errorResponse('Document ID is required', 400);
                 } else {
                     response = await handleGetDocument(request, env, db, documentId);
                 }
             } else if (path.startsWith('/api/player/documents/') && method === 'DELETE') {
                 const documentId = path.split('/api/player/documents/')[1];
                 if (!documentId) {
-                    response = errorResponse('ID do documento é obrigatório', 400);
+                    response = errorResponse('Document ID is required', 400);
                 } else {
                     response = await handleDeleteDocument(request, env, db, documentId);
                 }
@@ -159,23 +160,26 @@ export default {
 
             // Public Profile routes (no auth)
             else if (path.startsWith('/api/public/player/') && method === 'GET') {
-                const rest = path.slice('/api/public/player/'.length); // e.g. "slug" or "slug/documents/docId"
+                const rest = path.slice('/api/public/player/'.length); // e.g. "slug" or "slug/documents/docId" or "slug/profile-picture"
                 const parts = rest.split('/');
                 const slug = parts[0];
                 if (parts.length === 1) {
                     // GET /api/public/player/:slug
                     response = await handleGetPublicProfile(request, env, ctx, db, slug);
+                } else if (parts.length === 2 && parts[1] === 'profile-picture') {
+                    // GET /api/public/player/:slug/profile-picture
+                    response = await handleGetPublicProfilePicture(request, env, db, slug);
                 } else if (parts.length === 3 && parts[1] === 'documents') {
                     // GET /api/public/player/:slug/documents/:docId
                     const docId = parts[2];
                     response = await handleGetPublicDocument(request, env, db, slug, docId);
                 } else {
-                    response = errorResponse('Rota não encontrada', 404);
+                    response = errorResponse('Route not found', 404);
                 }
             }
 
             else {
-                response = errorResponse('Rota não encontrada', 404);
+                response = errorResponse('Route not found', 404);
             }
 
             return withCors(response, corsHeaders);
@@ -189,8 +193,8 @@ export default {
 
             const status = error.statusCode || 500;
             const clientMessage = status >= 500
-                ? `Erro interno do servidor: ${error.message} \n ${error.stack}`
-                : error.message || 'Ocorreu um erro';
+                ? `Internal server error: ${error.message}`
+                : error.message || 'An error occurred';
 
             return withCors(errorResponse(clientMessage, status), corsHeaders);
         } finally {

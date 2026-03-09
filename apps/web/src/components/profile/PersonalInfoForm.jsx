@@ -1,7 +1,7 @@
 import React from 'react';
 import CountrySearch from './CountrySearch';
 
-const POSITIONS = ['Levantador', 'Ponteiro', 'Oposto', 'Central', 'Libero'];
+const POSITIONS = ['Setter', 'Outside Hitter', 'Opposite', 'Middle Blocker', 'Libero'];
 
 export default function PersonalInfoForm({ formData, setFormData }) {
     const handleChange = (e) => {
@@ -12,7 +12,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
     return (
         <div className="personal-info-grid">
             <div className="form-group">
-                <label htmlFor="name">Nome Completo</label>
+                <label htmlFor="name">Full Name</label>
                 <input
                     type="text"
                     id="name"
@@ -25,7 +25,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="position">Posição</label>
+                <label htmlFor="position">Position</label>
                 <select
                     id="position"
                     name="position"
@@ -33,7 +33,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
                     onChange={handleChange}
                     required
                 >
-                    <option value="" disabled>Selecione uma posição</option>
+                    <option value="" disabled>Select a position</option>
                     {POSITIONS.map(pos => (
                         <option key={pos} value={pos}>{pos}</option>
                     ))}
@@ -41,7 +41,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="birthYear">Ano de Nascimento</label>
+                <label htmlFor="birthYear">Birth Year</label>
                 <input
                     type="number"
                     id="birthYear"
@@ -56,21 +56,21 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="nationality">Nacionalidade</label>
+                <label htmlFor="nationality">Nationality</label>
                 <CountrySearch
                     value={formData.nationality || ''}
                     onChange={(val) => setFormData(prev => ({ ...prev, nationality: val }))}
-                    placeholder="Ex: Brasileira"
+                    placeholder="Ex: Brazilian"
                     required
                 />
             </div>
 
             <div className="form-group">
-                <label htmlFor="secondNationality">Segunda Nacionalidade (Opcional)</label>
+                <label htmlFor="secondNationality">Second Nationality (Optional)</label>
                 <CountrySearch
                     value={formData.secondNationality || ''}
                     onChange={(val) => setFormData(prev => ({ ...prev, secondNationality: val }))}
-                    placeholder="Ex: Italiana"
+                    placeholder="Ex: Italian"
                 />
             </div>
 
@@ -89,7 +89,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="heightCm">Altura (cm)</label>
+                <label htmlFor="heightCm">Height (cm)</label>
                 <input
                     type="number"
                     id="heightCm"
@@ -104,7 +104,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="weightKg">Peso (kg)</label>
+                <label htmlFor="weightKg">Weight (kg)</label>
                 <input
                     type="number"
                     id="weightKg"
@@ -120,7 +120,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="attackReachCm">Alcance de Ataque (cm)</label>
+                <label htmlFor="attackReachCm">Spike Reach (cm)</label>
                 <input
                     type="number"
                     id="attackReachCm"
@@ -135,7 +135,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="blockReachCm">Alcance de Bloqueio (cm)</label>
+                <label htmlFor="blockReachCm">Block Reach (cm)</label>
                 <input
                     type="number"
                     id="blockReachCm"
@@ -151,7 +151,7 @@ export default function PersonalInfoForm({ formData, setFormData }) {
 
             {/* Current Team */}
             <div className="form-group">
-                <label htmlFor="currentTeam">Time Atual (Opcional)</label>
+                <label htmlFor="currentTeam">Current Team (Optional)</label>
                 <input
                     type="text"
                     id="currentTeam"
@@ -164,11 +164,36 @@ export default function PersonalInfoForm({ formData, setFormData }) {
             </div>
 
             <div className="form-group">
-                <label htmlFor="currentTeamCountry">País do Time Atual (Opcional)</label>
+                <label htmlFor="currentTeamCountry">Current Team Country (Optional)</label>
                 <CountrySearch
                     value={formData.currentTeamCountry || ''}
                     onChange={(val) => setFormData(prev => ({ ...prev, currentTeamCountry: val }))}
-                    placeholder="Pesquisar país..."
+                    placeholder="Search country..."
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="agency">Agency (Optional)</label>
+                <input
+                    type="text"
+                    id="agency"
+                    name="agency"
+                    value={formData.agency || ''}
+                    onChange={handleChange}
+                    placeholder="Ex: XYZ Sports Agency"
+                    maxLength={100}
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="agencyWhatsapp">Agency Contact WhatsApp (Optional)</label>
+                <input
+                    type="tel"
+                    id="agencyWhatsapp"
+                    name="agencyWhatsapp"
+                    value={formData.agencyWhatsapp || ''}
+                    onChange={handleChange}
+                    placeholder="Ex: 5511999999999"
                 />
             </div>
         </div>

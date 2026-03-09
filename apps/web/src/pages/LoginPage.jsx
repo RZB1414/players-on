@@ -20,7 +20,7 @@ export default function LoginPage() {
             await login(email, password);
             navigate('/dashboard', { replace: true });
         } catch (err) {
-            setError(err.message || 'Erro ao fazer login');
+            setError(err.message || 'Error logging in');
         } finally {
             setIsSubmitting(false);
         }
@@ -31,14 +31,14 @@ export default function LoginPage() {
             <div className="auth-container">
                 <div className="auth-card">
                     <Link to="/" className="auth-back-link">
-                        ← Voltar para o site
+                        ← Back to site
                     </Link>
                     <div className="auth-header">
                         <div className="auth-logo">
                             <span className="auth-logo-icon">⚡</span>
                             <h1>Players On</h1>
                         </div>
-                        <p className="auth-subtitle">Entre na sua conta</p>
+                        <p className="auth-subtitle">Sign in to your account</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="auth-form">
@@ -56,7 +56,7 @@ export default function LoginPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="seu@email.com"
+                                placeholder="your@email.com"
                                 required
                                 autoComplete="email"
                                 disabled={isSubmitting}
@@ -64,7 +64,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="auth-field">
-                            <label htmlFor="login-password">Senha</label>
+                            <label htmlFor="login-password">Password</label>
                             <input
                                 id="login-password"
                                 type="password"
@@ -85,19 +85,19 @@ export default function LoginPage() {
                             {isSubmitting ? (
                                 <span className="auth-button-loading">
                                     <span className="auth-spinner" />
-                                    Entrando...
+                                    Signing in...
                                 </span>
                             ) : (
-                                'Entrar'
+                                'Sign In'
                             )}
                         </button>
                     </form>
 
                     <div className="auth-footer">
                         <p>
-                            Não tem uma conta?{' '}
+                            Don't have an account?{' '}
                             <Link to="/register" className="auth-link">
-                                Criar conta
+                                Sign up
                             </Link>
                         </p>
                     </div>

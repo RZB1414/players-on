@@ -26,23 +26,20 @@ export default function DashboardPage() {
 
     const API_BASE = import.meta.env.VITE_API_URL || 'https://players-on-api.volleyplusapp.workers.dev';
     const profileSlug = profile?.slug;
+    const analyticsSlug = analytics?.slug;
+    const publicSlug = analyticsSlug || profileSlug;
 
     const DEFAULT_PUBLIC_FRONTEND_URL = 'https://players-on.pages.dev';
-    const frontendEnvUrl = (import.meta.env.VITE_FRONTEND_URL || '').trim();
     const browserOrigin = window.location.origin?.trim();
 
-    // Always prefer the current app origin so "Abrir" points to the active environment with the athlete data.
+    // Open/copy must target the active app environment where the athlete data exists.
     let FRONTEND_URL_RAW = browserOrigin || DEFAULT_PUBLIC_FRONTEND_URL;
 
-    // Allow explicit override only when it is a valid non-empty value.
-    if (frontendEnvUrl && frontendEnvUrl !== 'undefined' && frontendEnvUrl !== 'null') {
-        FRONTEND_URL_RAW = frontendEnvUrl;
-    }
     if (!FRONTEND_URL_RAW.startsWith('http')) {
         FRONTEND_URL_RAW = `https://${FRONTEND_URL_RAW}`;
     }
     const FRONTEND_URL = FRONTEND_URL_RAW.endsWith('/') ? FRONTEND_URL_RAW.slice(0, -1) : FRONTEND_URL_RAW;
-    const publicProfileUrl = profileSlug ? `${FRONTEND_URL}/p/${profileSlug}` : null;
+    const publicProfileUrl = publicSlug ? `${FRONTEND_URL}/p/${publicSlug}` : null;
 
     useEffect(() => {
         let mounted = true;
@@ -51,6 +48,10 @@ export default function DashboardPage() {
                 const url = await getProfilePictureUrl();
                 if (mounted && url) {
                     setProfilePicUrl(url);
+                }
+            } else {
+                if (mounted) {
+                    setProfilePicUrl(null);
                 }
             }
         };
@@ -67,7 +68,9 @@ export default function DashboardPage() {
         })
             .then(r => r.json())
             .then(data => {
-                setAnalytics(data.data?.analytics || null);
+                const analyticsData = data.data?.analytics || {};
+                const slugFromAnalytics = data.data?.slug || null;
+                setAnalytics({ ...analyticsData, slug: slugFromAnalytics });
                 setAnalyticsLoading(false);
             })
             .catch(() => setAnalyticsLoading(false));
@@ -89,7 +92,7 @@ export default function DashboardPage() {
                 }
             }, 100);
         } else {
-            setError(result.error || 'Falha ao carregar o documento.');
+            setError(result.error || 'Failed to load document.');
         }
     };
 
@@ -123,14 +126,13 @@ export default function DashboardPage() {
             }
         } catch (err) {
             console.error(err);
-            alert('Não foi possível forçar a rotação no seu dispositivo. Use o scroll horizontal nativo da visualização caso esteja no celular.');
+            alert('Could not force rotation on your device. Use native horizontal scrolling if you are on mobile.');
         }
     };
 
     const formatDate = (dateStr) => {
-        return new Date(dateStr).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
+        return new Date(dateStr).toLocaleDateString('en-US', {
+            month: 'long',
             year: 'numeric',
         });
     };
@@ -156,20 +158,20 @@ export default function DashboardPage() {
                     <div className="suspicious-banner-content">
                         <span className="suspicious-icon">🛡️</span>
                         <div>
-                            <strong>Login suspeito detectado</strong>
+                            <strong>Suspicious login detected</strong>
                             <ul>
                                 {suspiciousLogin.reasons.map((reason, i) => (
                                     <li key={i}>{reason}</li>
                                 ))}
                             </ul>
                             <p className="suspicious-hint">
-                                Se não foi você, altere sua senha imediatamente.
+                                If this wasn't you, change your password immediately.
                             </p>
                         </div>
                         <button
                             className="suspicious-dismiss"
                             onClick={dismissSuspiciousLogin}
-                            aria-label="Fechar alerta"
+                            aria-label="Close alert"
                         >
                             ✕
                         </button>
@@ -187,7 +189,7 @@ export default function DashboardPage() {
                     <div className="dashboard-header-right">
                         <span className="dashboard-user-name">{user.name}</span>
                         <button onClick={handleLogout} className="dashboard-logout-btn">
-                            Sair
+                            Sign Out
                         </button>
                     </div>
                 </header>
@@ -198,13 +200,13 @@ export default function DashboardPage() {
                         className={`dashboard-tab ${activeTab === 'overview' ? 'active' : ''}`}
                         onClick={() => setActiveTab('overview')}
                     >
-                        Visão Geral
+                        Overview
                     </button>
                     <button
                         className={`dashboard-tab ${activeTab === 'profile' ? 'active' : ''}`}
                         onClick={() => setActiveTab('profile')}
                     >
-                        Perfil
+                        Profile
                     </button>
                     <button
                         className={`dashboard-tab ${activeTab === 'analytics' ? 'active' : ''}`}
@@ -233,7 +235,7 @@ export default function DashboardPage() {
                                     <div className="profile-meta">
                                         <span className="profile-badge">{user.role}</span>
                                         <span className="profile-date">
-                                            Membro desde {formatDate(user.createdAt)}
+                                            Member since {formatDate(user.createdAt)}
                                         </span>
                                     </div>
                                 </div>
@@ -246,11 +248,11 @@ export default function DashboardPage() {
                     {activeTab === 'profile' && (
                         <div className="dashboard-profile">
                             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h2>Meu Perfil Atlético</h2>
+                                <h2>My Athletic Profile</h2>
                                 <button
                                     className="edit-profile-btn"
                                     onClick={() => navigate('/profile')}
-                                    title="Editar Perfil"
+                                    title="Edit Profile"
                                     style={{
                                         background: 'rgba(255, 255, 255, 0.1)',
                                         border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -273,57 +275,57 @@ export default function DashboardPage() {
                                         e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
                                     }}
                                 >
-                                    <p>Editar</p>
+                                    <p>Edit</p>
                                 </button>
                             </div>
 
                             {(profileLoading && !profile) ? (
                                 <div className="loading-state">
                                     <div className="auth-loading-spinner" />
-                                    <p>Carregando perfil...</p>
+                                    <p>Loading profile...</p>
                                 </div>
                             ) : !profile || Object.keys(profile).length === 0 ? (
                                 <div className="empty-state">
-                                    <p>Você ainda não configurou seu perfil atlético.</p>
+                                    <p>You haven't set up your athletic profile yet.</p>
                                     <button className="btn-create-profile" onClick={() => navigate('/profile')}>
-                                        Criar Perfil
+                                        Create Profile
                                     </button>
                                 </div>
                             ) : (
                                 <div className="profile-readonly-details">
                                     <div className="readonly-stats-grid">
                                         <div className="readonly-stat readonly-stat-wide">
-                                            <span className="readonly-stat-label">Nome</span>
+                                            <span className="readonly-stat-label">Name</span>
                                             <span className="readonly-stat-value">{profile.name || 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Posição</span>
+                                            <span className="readonly-stat-label">Position</span>
                                             <span className="readonly-stat-value">{profile.position || 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Ano Nascimento</span>
+                                            <span className="readonly-stat-label">Birth Year</span>
                                             <span className="readonly-stat-value">{profile.birthYear || 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Altura</span>
+                                            <span className="readonly-stat-label">Height</span>
                                             <span className="readonly-stat-value">{profile.heightCm ? `${profile.heightCm} cm` : 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Peso</span>
+                                            <span className="readonly-stat-label">Weight</span>
                                             <span className="readonly-stat-value">{profile.weightKg ? `${profile.weightKg} kg` : 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Alcance Ataque</span>
+                                            <span className="readonly-stat-label">Spike Reach</span>
                                             <span className="readonly-stat-value">{profile.attackReachCm ? `${profile.attackReachCm} cm` : 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Alcance Bloqueio</span>
+                                            <span className="readonly-stat-label">Block Reach</span>
                                             <span className="readonly-stat-value">{profile.blockReachCm ? `${profile.blockReachCm} cm` : 'N/A'}</span>
                                         </div>
 
                                         {(profile.currentTeamName || profile.currentTeamCountry || profile.currentTeam) && (
                                             <div className="readonly-stat readonly-stat-wide">
-                                                <span className="readonly-stat-label">Time Atual</span>
+                                                <span className="readonly-stat-label">Current Team</span>
                                                 <span className="readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     {(() => {
                                                         const country = profile.currentTeamCountry;
@@ -340,7 +342,7 @@ export default function DashboardPage() {
                                         )}
 
                                         <div className="readonly-stat readonly-stat-wide">
-                                            <span className="readonly-stat-label">Nacionalidade</span>
+                                            <span className="readonly-stat-label">Nationality</span>
                                             <span className="readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {(() => {
                                                     const imgUrl = getNationalityFlagUrl(profile.nationality, '32x24');
@@ -351,7 +353,7 @@ export default function DashboardPage() {
                                             </span>
                                         </div>
                                         <div className="readonly-stat readonly-stat-wide">
-                                            <span className="readonly-stat-label">Segunda Nacionalidade</span>
+                                            <span className="readonly-stat-label">Second Nationality</span>
                                             <span className="readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {(() => {
                                                     if (!profile.secondNationality) return 'N/A';
@@ -363,18 +365,26 @@ export default function DashboardPage() {
                                             </span>
                                         </div>
                                         <div className="readonly-stat readonly-stat-wide">
-                                            <span className="readonly-stat-label">Idioma Nativo</span>
+                                            <span className="readonly-stat-label">Native Language</span>
                                             <span className="readonly-stat-value">{profile.nativeLanguage || 'N/A'}</span>
                                         </div>
                                         <div className="readonly-stat readonly-stat-wide">
                                             <span className="readonly-stat-label">WhatsApp</span>
                                             <span className="readonly-stat-value">{profile.whatsappNumber || 'N/A'}</span>
                                         </div>
+                                        <div className="readonly-stat readonly-stat-wide">
+                                            <span className="readonly-stat-label">Agency</span>
+                                            <span className="readonly-stat-value">{profile.agency || 'N/A'}</span>
+                                        </div>
+                                        <div className="readonly-stat readonly-stat-wide">
+                                            <span className="readonly-stat-label">Agency Contact WhatsApp</span>
+                                            <span className="readonly-stat-value">{profile.agencyWhatsapp || 'N/A'}</span>
+                                        </div>
                                     </div>
 
                                     {(profile.nativeLanguage || (profile.otherLanguages && profile.otherLanguages.length > 0)) && (
                                         <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Idiomas</h3>
+                                            <h3 className="readonly-section-title">Languages</h3>
                                             <ul className="readonly-list">
                                                 {profile.nativeLanguage && (() => {
                                                     const imgUrl = getLanguageFlagUrl(profile.nativeLanguage, '32x24');
@@ -384,7 +394,7 @@ export default function DashboardPage() {
                                                                 {imgUrl && <img src={imgUrl} alt="" style={{ width: 22, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
                                                                 <strong>{profile.nativeLanguage}</strong>
                                                             </span>
-                                                            <span className="readonly-list-sub">Nativo</span>
+                                                            <span className="readonly-list-sub">Native</span>
                                                         </li>
                                                     );
                                                 })()}
@@ -406,7 +416,7 @@ export default function DashboardPage() {
 
                                     {profile.documents && profile.documents.length > 0 && (
                                         <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Documentos ({profile.documents.length})</h3>
+                                            <h3 className="readonly-section-title">Documents ({profile.documents.length})</h3>
                                             <ul className="readonly-doc-list">
                                                 {profile.documents.map((doc) => {
                                                     const isExpanded = expandedDocId === doc.id;
@@ -419,7 +429,7 @@ export default function DashboardPage() {
                                                                 <span className="readonly-doc-icon">PDF</span>
                                                                 <span className="readonly-doc-name">{doc.filename}</span>
                                                                 <span className="readonly-doc-date">
-                                                                    {new Date(doc.uploadedAt).toLocaleDateString('pt-BR')}
+                                                                    {new Date(doc.uploadedAt).toLocaleDateString('en-US')}
                                                                 </span>
                                                             </div>
                                                             {isExpanded && (
@@ -433,7 +443,7 @@ export default function DashboardPage() {
                                                                                 handleOpenViewer(doc.id);
                                                                             }}
                                                                         >
-                                                                            Abrir ↗
+                                                                            Open ↗
                                                                         </button>
                                                                         <button
                                                                             className="readonly-doc-close-btn"
@@ -456,7 +466,7 @@ export default function DashboardPage() {
 
                                     {profile.achievements && profile.achievements.length > 0 && (
                                         <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Conquistas</h3>
+                                            <h3 className="readonly-section-title">Achievements</h3>
                                             <ul className="readonly-list">
                                                 {profile.achievements.map((item, index) => (
                                                     <li key={index}>
@@ -475,7 +485,7 @@ export default function DashboardPage() {
 
                                     {profile.individualAwards && profile.individualAwards.length > 0 && (
                                         <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Premiações Individuais</h3>
+                                            <h3 className="readonly-section-title">Individual Awards</h3>
                                             <ul className="readonly-list">
                                                 {profile.individualAwards.map((item, index) => (
                                                     <li key={index}>
@@ -500,7 +510,7 @@ export default function DashboardPage() {
                     {activeTab === 'analytics' && (
                         <div className="dashboard-profile">
                             <div className="section-header" style={{ marginBottom: '1.5rem' }}>
-                                <h2>Analytics do Perfil</h2>
+                                <h2>Profile Analytics</h2>
                             </div>
 
                             {/* Public Profile URL Card */}
@@ -514,7 +524,7 @@ export default function DashboardPage() {
                                         fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
                                         letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)'
                                     }}>
-                                        Seu Link Público
+                                        Your Public Link
                                     </span>
                                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                         <span style={{
@@ -536,7 +546,7 @@ export default function DashboardPage() {
                                                     cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
                                                 }}
                                             >
-                                                {analyticsCopied ? '✅ Copiado' : '📋 Copiar'}
+                                                {analyticsCopied ? '✅ Copied' : '📋 Copy'}
                                             </button>
                                             <button
                                                 onClick={() => window.open(publicProfileUrl, '_blank')}
@@ -546,50 +556,50 @@ export default function DashboardPage() {
                                                     cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
                                                 }}
                                             >
-                                                Abrir ↗
+                                                Open ↗
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="empty-state" style={{ marginBottom: '1rem' }}>
-                                    <p>Salve seu perfil primeiro para gerar seu link público.</p>
+                                    <p>Save your profile first to generate your public link.</p>
                                 </div>
                             )}
 
                             {analyticsLoading ? (
                                 <div className="loading-state">
                                     <div className="auth-loading-spinner" />
-                                    <p>Carregando analytics...</p>
+                                    <p>Loading analytics...</p>
                                 </div>
-                            ) : !analytics ? (
+                            ) : !analytics || !analyticsSlug ? (
                                 <div className="empty-state">
-                                    <p>Nenhum dado disponível ainda. Compartilhe seu perfil público para começar a rastrear visitas.</p>
+                                    <p>No data available yet. Share your public profile to start tracking visits.</p>
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                     <div className="readonly-stats-grid">
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Total Visitas</span>
+                                            <span className="readonly-stat-label">Total Views</span>
                                             <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.totalViews ?? 0}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Visitantes Únicos</span>
+                                            <span className="readonly-stat-label">Unique Visitors</span>
                                             <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.uniqueVisitors ?? 0}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Últimos 7 dias</span>
+                                            <span className="readonly-stat-label">Last 7 days</span>
                                             <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.last7DaysViews ?? 0}</span>
                                         </div>
                                         <div className="readonly-stat">
-                                            <span className="readonly-stat-label">Últimos 30 dias</span>
+                                            <span className="readonly-stat-label">Last 30 days</span>
                                             <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.last30DaysViews ?? 0}</span>
                                         </div>
                                     </div>
 
                                     {analytics.topCities?.length > 0 && (
                                         <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Top Cidades</h3>
+                                            <h3 className="readonly-section-title">Top Cities</h3>
                                             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                                 {analytics.topCities.map((c, i) => (
                                                     <li key={i} style={{
@@ -607,7 +617,7 @@ export default function DashboardPage() {
 
                                     {analytics.topCountries?.length > 0 && (
                                         <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Top Países</h3>
+                                            <h3 className="readonly-section-title">Top Countries</h3>
                                             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                                 {analytics.topCountries.map((c, i) => (
                                                     <li key={i} style={{
@@ -631,7 +641,7 @@ export default function DashboardPage() {
                                     style={{ marginTop: '1.5rem' }}
                                     onClick={() => setAnalytics(null)}
                                 >
-                                    🔄 Atualizar
+                                    🔄 Refresh
                                 </button>
                             )}
                         </div>
@@ -669,7 +679,7 @@ export default function DashboardPage() {
                         }}
                     >
                         <span style={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
-                            Visualizando Documento
+                            Viewing Document
                         </span>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
@@ -686,7 +696,7 @@ export default function DashboardPage() {
                                     background: 'rgba(255,255,255,0.1)',
                                 }}
                             >
-                                ⛶ Paisagem
+                                ⛶ Landscape
                             </button>
                             <button
                                 type="button"
@@ -702,7 +712,7 @@ export default function DashboardPage() {
                                     background: 'rgba(255,80,80,0.1)',
                                 }}
                             >
-                                ✕ Fechar
+                                ✕ Close
                             </button>
                         </div>
                     </div>
@@ -716,7 +726,7 @@ export default function DashboardPage() {
                     >
                         <iframe
                             src={viewerUrl}
-                            title="Documento PDF"
+                            title="PDF Document"
                             style={{
                                 display: 'block',
                                 width: '100%',

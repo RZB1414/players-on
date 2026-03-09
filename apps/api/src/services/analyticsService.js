@@ -9,7 +9,10 @@ const BOT_REGEX = /bot|crawler|spider|crawling|facebookexternalhit|twitterbot|li
 export async function trackProfileView(slug, ip, city, country, userAgent, db) {
     try {
         // Skip bots entirely
-        if (BOT_REGEX.test(userAgent || '')) return;
+        if (BOT_REGEX.test(userAgent || '')) {
+            console.log(`[ANALYTICS_TRACK_SKIPPED] Bot detected for slug: "${slug}", userAgent: "${userAgent}"`);
+            return;
+        }
 
         const col = db.collection('profile_views');
         const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
@@ -21,7 +24,10 @@ export async function trackProfileView(slug, ip, city, country, userAgent, db) {
             createdAt: { $gte: thirtyMinsAgo },
         });
 
-        if (existing) return; // Already counted recently
+        if (existing) {
+            console.log(`[ANALYTICS_TRACK_SKIPPED] IP ${ip} recently viewed slug: "${slug}"`);
+            return;
+        }
 
         await col.insertOne({
             profileSlug: slug,
@@ -31,6 +37,7 @@ export async function trackProfileView(slug, ip, city, country, userAgent, db) {
             userAgent: (userAgent || '').substring(0, 256), // Limit length
             createdAt: new Date(),
         });
+        console.log(`[ANALYTICS_TRACK_SUCCESS] Logged view for slug: "${slug}" from IP: ${ip}`);
     } catch (err) {
         // Non-critical — never let tracking failures affect the response
         console.error('[ANALYTICS_TRACK_ERROR]', err.message);

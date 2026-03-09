@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import PDFModal from '../components/PDFModal';
 import VideoModal from '../components/VideoModal';
+import { getNationalityFlagUrl, getLanguageFlagUrl } from '../components/profile/CountrySearch';
 import './PublicPlayerProfile.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://players-on-api.volleyplusapp.workers.dev';
@@ -46,21 +47,27 @@ export default function PublicPlayerProfile() {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}`)
+        const urlToFetch = `${API_BASE}/api/public/player/${encodeURIComponent(slug)}`;
+        console.log(`[PUBLIC_PROFILE_FRONTEND] Fetching from URL: ${urlToFetch}`);
+
+        fetch(urlToFetch)
             .then(res => {
+                console.log(`[PUBLIC_PROFILE_FRONTEND] Response received. Status: ${res.status}`);
                 if (res.status === 404 || res.status === 400) {
-                    throw new Error('Player not found');
+                    throw new Error(`Player not found (HTTP ${res.status})`);
                 }
                 if (!res.ok) {
-                    throw new Error('Failed to load profile. Please check your connection.');
+                    throw new Error(`Failed to load profile (HTTP ${res.status}). Please check your connection.`);
                 }
                 return res.json();
             })
             .then(data => {
-                setPlayer(data.data?.player || null);
+                console.log(`[PUBLIC_PROFILE_FRONTEND] Data successfully parsed:`, data);
+                setPlayer(data.data?.player || data.player || null);
                 setLoading(false);
             })
             .catch(err => {
+                console.error(`[PUBLIC_PROFILE_FRONTEND] Caught error during fetch/parse:`, err);
                 // Ignore TypeError when testing to not confuse with player missing, TypeError typically means fetch failed (CORS/network)
                 if (err.name === 'TypeError') {
                     setError('Failed to connect to the server. Please check your network or try again later.');
@@ -73,10 +80,15 @@ export default function PublicPlayerProfile() {
 
     // Load profile picture
     useEffect(() => {
-        if (!player?.hasProfilePicture) return;
-        // Profile picture proxied by slug
-        setProfilePicUrl(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}/profile-picture`);
-    }, [player?.hasProfilePicture, slug]);
+        if (!player) return;
+        if (player.hasProfilePicture) {
+            // Include timestamp to bust browser cache
+            const timestamp = player.updatedAt ? new Date(player.updatedAt).getTime() : Date.now();
+            setProfilePicUrl(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}/profile-picture?t=${timestamp}`);
+        } else {
+            setProfilePicUrl(null);
+        }
+    }, [player?.hasProfilePicture, player?.updatedAt, slug]);
 
     const openDocument = useCallback(async (doc) => {
         const url = `${API_BASE}/api/public/player/${encodeURIComponent(slug)}/documents/${encodeURIComponent(doc.id)}`;
@@ -143,83 +155,155 @@ export default function PublicPlayerProfile() {
     return (
         <div className="public-profile-page">
             {/* ── HEADER ────────────────────────────────── */}
-            <div className="public-hero">
+            <div
+                className="public-hero"
+                style={{
+                    backgroundImage: profilePicUrl ? `url(${profilePicUrl})` : 'none'
+                }}
+            >
+                <div className="public-hero-overlay"></div>
                 <div className="public-hero-inner">
-                    {/* Avatar */}
-                    <div className="public-avatar">
-                        {profilePicUrl ? (
-                            <img src={profilePicUrl} alt={player.name} />
-                        ) : (
-                            <span>{player.name?.charAt(0).toUpperCase()}</span>
-                        )}
-                    </div>
-
                     <div className="public-hero-info">
                         <h1 className="public-name">{player.name}</h1>
                         <p className="public-position">{player.position}</p>
                         {player.nationality && (
                             <p className="public-nationality">{player.nationality}</p>
                         )}
-                        {player.currentTeam && (
-                            <p className="public-team">🏟️ {player.currentTeam}</p>
-                        )}
-                        {player.updatedAt && (
-                            <p className="public-updated">Updated {formatDate(player.updatedAt)}</p>
-                        )}
                     </div>
                 </div>
             </div>
 
             <div className="public-container">
-                {/* ── STATS GRID ───────────────────────────── */}
-                <section className="public-section">
-                    <div className="public-stats-grid">
-                        {player.heightCm && (
-                            <div className="public-stat-card">
-                                <span className="public-stat-label">Height</span>
-                                <span className="public-stat-value">{player.heightCm} <small>cm</small></span>
+                {/* ── PROFILE DETAILS (Matched to Dashboard) ──────── */}
+                <div className="public-readonly-details">
+                    <div className="public-readonly-stats-grid">
+                        <div className="public-readonly-stat public-readonly-stat-wide">
+                            <span className="public-readonly-stat-label">Name</span>
+                            <span className="public-readonly-stat-value">{player.name || 'N/A'}</span>
+                        </div>
+                        <div className="public-readonly-stat">
+                            <span className="public-readonly-stat-label">Position</span>
+                            <span className="public-readonly-stat-value">{player.position || 'N/A'}</span>
+                        </div>
+                        <div className="public-readonly-stat">
+                            <span className="public-readonly-stat-label">Birth Year</span>
+                            <span className="public-readonly-stat-value">{player.birthYear || 'N/A'}</span>
+                        </div>
+                        <div className="public-readonly-stat">
+                            <span className="public-readonly-stat-label">Height</span>
+                            <span className="public-readonly-stat-value">{player.heightCm ? `${player.heightCm} cm` : 'N/A'}</span>
+                        </div>
+                        <div className="public-readonly-stat">
+                            <span className="public-readonly-stat-label">Weight</span>
+                            <span className="public-readonly-stat-value">{player.weightKg ? `${player.weightKg} kg` : 'N/A'}</span>
+                        </div>
+                        <div className="public-readonly-stat">
+                            <span className="public-readonly-stat-label">Spike Reach</span>
+                            <span className="public-readonly-stat-value">{player.attackReachCm ? `${player.attackReachCm} cm` : 'N/A'}</span>
+                        </div>
+                        <div className="public-readonly-stat">
+                            <span className="public-readonly-stat-label">Block Reach</span>
+                            <span className="public-readonly-stat-value">{player.blockReachCm ? `${player.blockReachCm} cm` : 'N/A'}</span>
+                        </div>
+
+                        {(player.currentTeamName || player.currentTeamCountry || player.currentTeam) && (
+                            <div className="public-readonly-stat public-readonly-stat-wide">
+                                <span className="public-readonly-stat-label">Current Team</span>
+                                <span className="public-readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    {(() => {
+                                        const country = player.currentTeamCountry;
+                                        const imgUrl = country ? getNationalityFlagUrl(country, '32x24') : null;
+                                        return (
+                                            <>
+                                                {imgUrl && <img src={imgUrl} alt="" style={{ width: 24, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
+                                                {player.currentTeamName || player.currentTeam || 'N/A'}
+                                            </>
+                                        );
+                                    })()}
+                                </span>
                             </div>
                         )}
-                        {player.weightKg && (
-                            <div className="public-stat-card">
-                                <span className="public-stat-label">Weight</span>
-                                <span className="public-stat-value">{player.weightKg} <small>kg</small></span>
+
+                        {player.agency && (
+                            <div className="public-readonly-stat public-readonly-stat-wide">
+                                <span className="public-readonly-stat-label">Agency</span>
+                                <span className="public-readonly-stat-value">{player.agency}</span>
                             </div>
                         )}
-                        {player.attackReachCm && (
-                            <div className="public-stat-card">
-                                <span className="public-stat-label">Attack Reach</span>
-                                <span className="public-stat-value">{player.attackReachCm} <small>cm</small></span>
-                            </div>
-                        )}
-                        {player.blockReachCm && (
-                            <div className="public-stat-card">
-                                <span className="public-stat-label">Block Reach</span>
-                                <span className="public-stat-value">{player.blockReachCm} <small>cm</small></span>
-                            </div>
-                        )}
-                        {player.birthYear && (
-                            <div className="public-stat-card">
-                                <span className="public-stat-label">Birth Year</span>
-                                <span className="public-stat-value">{player.birthYear}</span>
-                            </div>
-                        )}
+
+                        <div className="public-readonly-stat public-readonly-stat-wide">
+                            <span className="public-readonly-stat-label">Nationality</span>
+                            <span className="public-readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {(() => {
+                                    const imgUrl = getNationalityFlagUrl(player.nationality, '32x24');
+                                    return imgUrl
+                                        ? <><img src={imgUrl} alt="" style={{ width: 24, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} /> {player.nationality}</>
+                                        : player.nationality || 'N/A';
+                                })()}
+                            </span>
+                        </div>
+                        <div className="public-readonly-stat public-readonly-stat-wide">
+                            <span className="public-readonly-stat-label">Second Nationality</span>
+                            <span className="public-readonly-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {(() => {
+                                    if (!player.secondNationality) return 'N/A';
+                                    const imgUrl = getNationalityFlagUrl(player.secondNationality, '32x24');
+                                    return imgUrl
+                                        ? <><img src={imgUrl} alt="" style={{ width: 24, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} /> {player.secondNationality}</>
+                                        : player.secondNationality;
+                                })()}
+                            </span>
+                        </div>
                     </div>
-                </section>
+
+                    {(player.nativeLanguage || (player.otherLanguages && player.otherLanguages.length > 0)) && (
+                        <div className="public-readonly-section">
+                            <h3 className="public-readonly-section-title">Languages</h3>
+                            <ul className="public-readonly-list">
+                                {player.nativeLanguage && (() => {
+                                    const imgUrl = getLanguageFlagUrl(player.nativeLanguage, '32x24');
+                                    return (
+                                        <li>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {imgUrl && <img src={imgUrl} alt="" style={{ width: 22, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
+                                                <strong>{player.nativeLanguage}</strong>
+                                            </span>
+                                            <span className="public-readonly-list-sub">Native</span>
+                                        </li>
+                                    );
+                                })()}
+                                {(player.otherLanguages || []).map((item, index) => {
+                                    const imgUrl = getLanguageFlagUrl(item.name, '32x24');
+                                    return (
+                                        <li key={index}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {imgUrl && <img src={imgUrl} alt="" style={{ width: 22, height: 'auto', borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />}
+                                                <strong>{item.name}</strong>
+                                            </span>
+                                            <span className="public-readonly-list-sub">{item.level}</span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    )}
+                </div>
 
                 {/* ── CAREER HIGHLIGHTS ────────────────────── */}
                 {player.achievements?.length > 0 && (
                     <section className="public-section">
                         <h2 className="public-section-title">🏆 Career Highlights</h2>
                         <ul className="public-list">
-                            {player.achievements.map((a, i) => (
-                                <li key={i} className="public-list-item">
-                                    <span className="public-list-main">
-                                        {a.year ? `${a.year} – ` : ''}<strong>{a.title}</strong>
-                                    </span>
-                                    {a.championship && <span className="public-list-sub">{a.championship}</span>}
-                                </li>
-                            ))}
+                            {[...player.achievements]
+                                .sort((a, b) => (Number(b.year) || 0) - (Number(a.year) || 0))
+                                .map((a, i) => (
+                                    <li key={i} className="public-list-item">
+                                        <span className="public-list-main">
+                                            {a.year ? `${a.year} – ` : ''}<strong>{a.title}</strong>
+                                        </span>
+                                        {a.championship && <span className="public-list-sub">{a.championship}</span>}
+                                    </li>
+                                ))}
                         </ul>
                     </section>
                 )}
@@ -229,14 +313,16 @@ export default function PublicPlayerProfile() {
                     <section className="public-section">
                         <h2 className="public-section-title">🥇 Individual Awards</h2>
                         <ul className="public-list">
-                            {player.individualAwards.map((a, i) => (
-                                <li key={i} className="public-list-item">
-                                    <span className="public-list-main">
-                                        {a.year ? `${a.year} – ` : ''}<strong>{a.title}</strong>
-                                    </span>
-                                    {a.championship && <span className="public-list-sub">{a.championship}</span>}
-                                </li>
-                            ))}
+                            {[...player.individualAwards]
+                                .sort((a, b) => (Number(b.year) || 0) - (Number(a.year) || 0))
+                                .map((a, i) => (
+                                    <li key={i} className="public-list-item">
+                                        <span className="public-list-main">
+                                            {a.year ? `${a.year} – ` : ''}<strong>{a.title}</strong>
+                                        </span>
+                                        {a.championship && <span className="public-list-sub">{a.championship}</span>}
+                                    </li>
+                                ))}
                         </ul>
                     </section>
                 )}
@@ -287,16 +373,30 @@ export default function PublicPlayerProfile() {
                 )}
 
                 {/* ── WHATSAPP CONTACT ─────────────────────── */}
-                {player.whatsappNumber && (
+                {(player.whatsappNumber || player.agencyWhatsapp) && (
                     <section className="public-section">
-                        <a
-                            href={`https://wa.me/${player.whatsappNumber.replace(/\D/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="public-whatsapp-btn"
-                        >
-                            <span>📱</span> Contact Player via WhatsApp
-                        </a>
+                        {player.whatsappNumber && (
+                            <a
+                                href={`https://wa.me/${player.whatsappNumber.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="public-whatsapp-btn"
+                                style={{ marginBottom: player.agencyWhatsapp ? '1rem' : '0' }}
+                            >
+                                <span>📱</span> Contact Player via WhatsApp
+                            </a>
+                        )}
+                        {player.agencyWhatsapp && (
+                            <a
+                                href={`https://wa.me/${player.agencyWhatsapp.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="public-whatsapp-btn"
+                                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+                            >
+                                <span>📞</span> Contact Agent via WhatsApp
+                            </a>
+                        )}
                     </section>
                 )}
 
@@ -320,6 +420,13 @@ export default function PublicPlayerProfile() {
                         <p className="public-qr-url">{profileUrl}</p>
                     </div>
                 </section>
+
+                {/* ── FOOTER INFO ──────────────────────────── */}
+                {player.updatedAt && (
+                    <div className="public-footer-info">
+                        <p className="public-updated-bottom">Profile last updated on {formatDate(player.updatedAt)}</p>
+                    </div>
+                )}
             </div>
 
             {/* ── MODALS ───────────────────────────────── */}

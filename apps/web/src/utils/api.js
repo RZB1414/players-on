@@ -20,7 +20,7 @@ export async function request(endpoint, options = {}) {
 
     if (responseType === 'blob') {
         if (!response.ok) {
-            let errorMsg = 'Ocorreu um erro ao baixar o arquivo';
+            let errorMsg = 'An error occurred while downloading the file';
             try {
                 const data = await response.json();
                 if (data && data.error) errorMsg = data.error;
@@ -35,7 +35,8 @@ export async function request(endpoint, options = {}) {
     const data = await response.json();
 
     if (!response.ok) {
-        const error = new Error(data.error || 'Ocorreu um erro');
+        console.error(`[API ERROR] ${response.status} at ${endpoint}`, JSON.stringify(data, null, 2));
+        const error = new Error(data.error || 'An error occurred');
         error.status = response.status;
         error.data = data;
         throw error;

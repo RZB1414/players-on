@@ -4,7 +4,7 @@ import { authMiddleware } from '../middlewares/auth.js';
 import { getPublicProfileBySlug } from '../services/playerService.js';
 import { trackProfileView, getProfileAnalytics } from '../services/analyticsService.js';
 
-const SLUG_REGEX = /^[a-z0-9-]{1,100}$/;
+const SLUG_REGEX = /^[a-zA-Z0-9-]{1,100}$/;
 const DOC_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 
 function getClientInfo(request) {
@@ -45,22 +45,33 @@ async function applyPublicRateLimit(ip, env) {
  * GET /api/public/player/:slug
  * Public — no auth required. Rate limited, view tracked, cached.
  */
-export async function handleGetPublicProfile(request, env, ctx, db, slug) {
+export async function handleGetPublicProfile(request, env, ctx, db, rawSlug) {
+    console.log(`[PUBLIC_PROFILE_REQUEST] Fetching public profile with rawSlug: "${rawSlug}"`);
     // 1. Validate slug
-    if (!SLUG_REGEX.test(slug)) {
+    if (!rawSlug || !SLUG_REGEX.test(rawSlug)) {
+        console.warn(`[PUBLIC_PROFILE_REJECTED] Invalid profile slug format: "${rawSlug}"`);
         return errorResponse('Invalid profile slug', 400);
     }
+
+    const slug = rawSlug.toLowerCase();
+    console.log(`[PUBLIC_PROFILE_NORMALIZED] Querying database for slug: "${slug}"`);
 
     // 2. KV rate limit (50/min per IP)
     const { ip, city, country, userAgent } = getClientInfo(request);
     const rateLimitError = await applyPublicRateLimit(ip, env);
-    if (rateLimitError) return rateLimitError;
+    if (rateLimitError) {
+        console.warn(`[PUBLIC_PROFILE_RATELIMIT] IP ${ip} rate limited.`);
+        return rateLimitError;
+    }
 
     // 3. Fetch public profile
     const profile = await getPublicProfileBySlug(slug, db);
     if (!profile) {
+        console.warn(`[PUBLIC_PROFILE_NOT_FOUND] No player found in DB matching slug: "${slug}"`);
         return errorResponse('Player not found', 404);
     }
+
+    console.log(`[PUBLIC_PROFILE_SUCCESS] Successfully retrieved profile for: "${profile.name}" (${slug})`);
 
     // 4. Track view non-blocking (never delays response)
     ctx.waitUntil(trackProfileView(slug, ip, city, country, userAgent, db));
@@ -85,6 +96,8 @@ export async function handleGetPublicProfile(request, env, ctx, db, slug) {
         // Only expose safe document fields — never objectKey
         documents: (profile.documents || []).map(d => ({ id: d.id, filename: d.filename })),
         whatsappNumber: profile.whatsappNumber || null,
+        agency: profile.agency || null,
+        agencyWhatsapp: profile.agencyWhatsapp || null,
         hasProfilePicture: profile.hasProfilePicture || false,
         updatedAt: profile.updatedAt || null,
         slug: profile.slug,
@@ -103,11 +116,13 @@ export async function handleGetPublicProfile(request, env, ctx, db, slug) {
  * GET /api/public/player/:slug/documents/:docId
  * Streams a PDF from R2 — ownership validated, objectKey never exposed.
  */
-export async function handleGetPublicDocument(request, env, db, slug, docId) {
+export async function handleGetPublicDocument(request, env, db, rawSlug, docId) {
     // 1. Validate inputs
-    if (!SLUG_REGEX.test(slug)) {
+    if (!rawSlug || !SLUG_REGEX.test(rawSlug)) {
         return errorResponse('Invalid profile slug', 400);
     }
+    const slug = rawSlug.toLowerCase();
+
     if (!DOC_ID_REGEX.test(docId)) {
         return errorResponse('Invalid document ID', 400);
     }
@@ -141,6 +156,37 @@ export async function handleGetPublicDocument(request, env, db, slug, docId) {
 }
 
 /**
+ * GET /api/public/player/:slug/profile-picture
+ * Streams profile picture from R2 by unique player slug
+ */
+export async function handleGetPublicProfilePicture(request, env, db, rawSlug) {
+    if (!rawSlug || !SLUG_REGEX.test(rawSlug)) {
+        return errorResponse('Invalid profile slug', 400);
+    }
+    const slug = rawSlug.toLowerCase();
+
+    const playersCol = db.collection('players');
+    const profile = await playersCol.findOne({ slug }, { projection: { userId: 1, hasProfilePicture: 1 } });
+
+    if (!profile || !profile.hasProfilePicture) {
+        return errorResponse('Profile picture not found', 404);
+    }
+
+    const objectKey = `${profile.userId}/profile-picture.jpg`;
+    const r2Object = await env.PLAYERS_DOCUMENTS_BUCKET.get(objectKey);
+
+    if (!r2Object) {
+        return errorResponse('Profile picture file not found', 404);
+    }
+
+    const headers = new Headers();
+    r2Object.writeHttpMetadata(headers);
+    headers.set('Cache-Control', 'public, max-age=86400');
+
+    return new Response(r2Object.body, { headers });
+}
+
+/**
  * GET /api/player/profile-analytics
  * Authenticated — returns analytics for the logged-in player's profile.
  */
@@ -161,5 +207,5 @@ export async function handleGetProfileAnalytics(request, env, db) {
 
     const analytics = await getProfileAnalytics(player.slug, db);
 
-    return successResponse({ analytics });
+    return successResponse({ analytics, slug: player.slug });
 }

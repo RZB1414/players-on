@@ -29,17 +29,21 @@ export async function handleUpdateProfile(request, env, db) {
     if (!auth.authenticated) return auth.response;
 
     const body = sanitizeInput(await request.json());
+    console.log(`[PROFILE_SAVE] Received profile update for userId: ${auth.user.id}`);
 
     const validation = validatePlayerProfile(body);
     if (!validation.valid) {
+        console.error(`[PROFILE_SAVE_ERROR] Validation failed for userId: ${auth.user.id}. Errors:`, validation.errors.join('. '));
         return errorResponse(validation.errors.join('. '), 400);
     }
+
+    console.log(`[PROFILE_SAVE] Validation passed for userId: ${auth.user.id}`);
 
     const updatedProfile = await createOrUpdateProfile(auth.user.id, body, db);
 
     return successResponse({
         profile: updatedProfile.value,
-        message: 'Perfil atualizado com sucesso'
+        message: 'Profile updated successfully'
     });
 }
 
@@ -58,7 +62,7 @@ export async function handleUploadDocument(request, env, db) {
 
         return successResponse({
             document: newDoc,
-            message: 'Documento enviado com sucesso'
+            message: 'Document uploaded successfully'
         }, 201);
     } catch (error) {
         // Specifically catch known logic errors and surface them with 400
@@ -93,7 +97,7 @@ export async function handleDeleteDocument(request, env, db, documentId) {
 
     try {
         await deleteDocument(auth.user.id, documentId, env, db, requestContext);
-        return successResponse({ message: 'Documento excluído com sucesso' });
+        return successResponse({ message: 'Document deleted successfully' });
     } catch (error) {
         return errorResponse(error.message, 400);
     }
@@ -115,7 +119,7 @@ export async function handleUploadProfilePicture(request, env, db) {
         return successResponse({
             success: true,
             hasProfilePicture: result.hasProfilePicture,
-            message: 'Foto de perfil enviada com sucesso'
+            message: 'Profile picture uploaded successfully'
         }, 201);
     } catch (error) {
         return errorResponse(error.message, 400);
