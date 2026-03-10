@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { api } from '../utils/api';
+import { api, clearStoredAuthTokens } from '../utils/api';
 
 const AuthContext = createContext(null);
 
@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
                 await api.post('/api/auth/refresh');
             } catch {
                 // If refresh fails, user needs to re-login
+                clearStoredAuthTokens();
                 setUser(null);
                 setSuspiciousLogin(null);
             }
@@ -41,6 +42,7 @@ export function AuthProvider({ children }) {
             setUser(data.user);
             startRefreshTimer();
         } catch {
+            clearStoredAuthTokens();
             setUser(null);
             stopRefreshTimer();
         } finally {
@@ -78,6 +80,7 @@ export function AuthProvider({ children }) {
         } catch {
             // Logout should always succeed on the client side
         }
+        clearStoredAuthTokens();
         setUser(null);
         setSuspiciousLogin(null);
         stopRefreshTimer();

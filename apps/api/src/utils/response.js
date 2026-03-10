@@ -16,6 +16,29 @@ export function successResponse(data, status = 200) {
     return jsonResponse({ success: true, ...data }, status);
 }
 
+export function getAccessTokenFromRequest(request) {
+    const authHeader = request.headers.get('authorization') || '';
+
+    if (authHeader.toLowerCase().startsWith('bearer ')) {
+        const token = authHeader.slice(7).trim();
+        if (token) return token;
+    }
+
+    const cookies = parseCookies(request);
+    return cookies.access_token || null;
+}
+
+export function getRefreshTokenFromRequest(request) {
+    const refreshHeader = request.headers.get('x-refresh-token') || '';
+
+    if (refreshHeader.trim()) {
+        return refreshHeader.trim();
+    }
+
+    const cookies = parseCookies(request);
+    return cookies.refresh_token || null;
+}
+
 /**
  * Build Set-Cookie headers for access and refresh tokens.
  * Uses HttpOnly, Secure, SameSite=None (production) or SameSite=Lax (dev).

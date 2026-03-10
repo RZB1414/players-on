@@ -1,10 +1,8 @@
 import { verifyToken } from '../utils/jwt.js';
-import { parseCookies } from '../utils/response.js';
-import { errorResponse } from '../utils/response.js';
+import { errorResponse, getAccessTokenFromRequest } from '../utils/response.js';
 
 export async function authMiddleware(request, env) {
-    const cookies = parseCookies(request);
-    const accessToken = cookies.access_token;
+    const accessToken = getAccessTokenFromRequest(request);
 
     if (!accessToken) {
         return { authenticated: false, response: errorResponse('Não autenticado', 401) };

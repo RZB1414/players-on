@@ -5,7 +5,7 @@ import {
     errorResponse,
     buildAuthCookies,
     buildClearAuthCookies,
-    parseCookies,
+    getRefreshTokenFromRequest,
 } from '../utils/response.js';
 import { getClientIP } from '../utils/deviceFingerprint.js';
 import { authMiddleware } from '../middlewares/auth.js';
@@ -29,7 +29,11 @@ export async function handleRegister(request, env, db) {
     const cookies = buildAuthCookies(accessToken, refreshToken, isProduction);
 
     const response = successResponse(
-        { user, message: 'Conta criada com sucesso' },
+        {
+            user,
+            auth: { accessToken, refreshToken },
+            message: 'Conta criada com sucesso'
+        },
         201
     );
 
@@ -60,6 +64,7 @@ export async function handleLogin(request, env, db) {
 
     const responseData = {
         user,
+        auth: { accessToken, refreshToken },
         message: 'Login realizado com sucesso',
     };
 
@@ -90,12 +95,12 @@ export async function handleLogout(request, env, db) {
         await revokeAllSessions(auth.user.id, db);
 
         // Invalidate refresh tokens
-        const cookies = parseCookies(request);
-        if (cookies.refresh_token) {
+        const refreshToken = getRefreshTokenFromRequest(request);
+        if (refreshToken) {
             const refreshTokensCol = db.collection('refresh_tokens');
             // Hash and revoke
             const encoder = new TextEncoder();
-            const data = encoder.encode(cookies.refresh_token);
+            const data = encoder.encode(refreshToken);
             const hashBuffer = await crypto.subtle.digest('SHA-256', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const tokenHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -130,8 +135,7 @@ export async function handleLogout(request, env, db) {
 }
 
 export async function handleRefresh(request, env, db) {
-    const cookies = parseCookies(request);
-    const oldRefreshToken = cookies.refresh_token;
+    const oldRefreshToken = getRefreshTokenFromRequest(request);
 
     if (!oldRefreshToken) {
         return errorResponse('Token de atualização não encontrado', 401);
@@ -142,7 +146,10 @@ export async function handleRefresh(request, env, db) {
     const isProduction = !request.url.includes('localhost');
     const newCookies = buildAuthCookies(accessToken, refreshToken, isProduction);
 
-    const response = successResponse({ message: 'Token atualizado com sucesso' });
+    const response = successResponse({
+        auth: { accessToken, refreshToken },
+        message: 'Token atualizado com sucesso'
+    });
     const headers = new Headers(response.headers);
     newCookies.forEach(cookie => headers.append('Set-Cookie', cookie));
 

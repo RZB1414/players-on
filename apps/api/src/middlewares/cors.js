@@ -5,7 +5,7 @@ export function corsMiddleware(request, env) {
     const corsHeaders = {
         'Access-Control-Allow-Origin': origin === 'null' ? '*' : origin,
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Refresh-Token, X-Requested-With, Accept, Origin',
         'Access-Control-Allow-Credentials': 'true',
         'Access-Control-Max-Age': '86400',
     };
