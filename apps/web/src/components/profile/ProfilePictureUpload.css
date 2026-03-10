@@ -18,9 +18,8 @@
 .profile-picture-upload__preview-shell,
 .profile-picture-upload__viewport {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    min-height: 220px;
-    border-radius: 24px;
+    min-height: 340px;
+    border-radius: 28px;
     overflow: hidden;
     position: relative;
     background:
@@ -34,6 +33,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background-position: center 20%;
+}
+
+.public-hero-preview {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3rem 1.25rem 2.5rem;
 }
 
 .profile-picture-upload__preview-image,
@@ -43,6 +50,8 @@
 }
 
 .profile-picture-upload__preview-image {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -72,6 +81,58 @@
     inset: 0;
     pointer-events: none;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+    z-index: 4;
+}
+
+.profile-picture-upload__hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(10, 10, 26, 0.95) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.profile-picture-upload__hero-inner {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    pointer-events: none;
+}
+
+.profile-picture-upload__hero-info {
+    flex: 1;
+    min-width: 200px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.profile-picture-upload__hero-name {
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem;
+    background: linear-gradient(135deg, #ffffff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.profile-picture-upload__hero-position {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a5b4fc;
+    margin: 0 0 0.35rem;
+}
+
+.profile-picture-upload__hero-nationality {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0.2rem 0 0;
 }
 
 .profile-picture-upload__loading-overlay {
@@ -84,7 +145,7 @@
     color: #fff;
     font-size: 0.95rem;
     font-weight: 600;
-    z-index: 2;
+    z-index: 5;
 }
 
 .profile-picture-upload__placeholder {
@@ -172,8 +233,12 @@
 @media (max-width: 640px) {
     .profile-picture-upload__preview-shell,
     .profile-picture-upload__viewport {
-        min-height: 180px;
+        min-height: 300px;
         border-radius: 20px;
+    }
+
+    .public-hero-preview {
+        padding: 2.5rem 1rem 2rem;
     }
 
     .profile-picture-upload__actions {

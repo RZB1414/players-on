@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useProfile } from '../../context/ProfileContext';
+import { useAuth } from '../../context/AuthContext';
 import './ProfilePictureUpload.css';
 
 export default function ProfilePictureUpload({ readOnly = false }) {
+    const { user } = useAuth();
     const { profile, uploadProfilePicture, getProfilePictureUrl } = useProfile();
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
@@ -13,7 +15,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
     const [imageSize, setImageSize] = useState(null);
     const [zoom, setZoom] = useState(1);
     const [position, setPosition] = useState({ x: 0, y: 0 });
-    const [viewportSize, setViewportSize] = useState(320);
+    const [viewportRect, setViewportRect] = useState({ width: 320, height: 280 });
     const fileInputRef = useRef(null);
     const previewObjectUrlRef = useRef(null);
     const editorViewportRef = useRef(null);
@@ -26,32 +28,32 @@ export default function ProfilePictureUpload({ readOnly = false }) {
         }
     }, []);
 
-    const clampPosition = useCallback((nextPosition, nextZoom = zoom, nextImageSize = imageSize, nextViewportSize = viewportSize) => {
-        if (!nextImageSize || !nextViewportSize) {
+    const clampPosition = useCallback((nextPosition, nextZoom = zoom, nextImageSize = imageSize, nextViewportRect = viewportRect) => {
+        if (!nextImageSize || !nextViewportRect?.width || !nextViewportRect?.height) {
             return { x: 0, y: 0 };
         }
 
         const baseScale = Math.max(
-            nextViewportSize / nextImageSize.width,
-            nextViewportSize / nextImageSize.height
+            nextViewportRect.width / nextImageSize.width,
+            nextViewportRect.height / nextImageSize.height
         );
 
         const renderedWidth = nextImageSize.width * baseScale * nextZoom;
         const renderedHeight = nextImageSize.height * baseScale * nextZoom;
 
-        const maxOffsetX = Math.max(0, (renderedWidth - nextViewportSize) / 2);
-        const maxOffsetY = Math.max(0, (renderedHeight - nextViewportSize) / 2);
+        const maxOffsetX = Math.max(0, (renderedWidth - nextViewportRect.width) / 2);
+        const maxOffsetY = Math.max(0, (renderedHeight - nextViewportRect.height) / 2);
 
         return {
             x: Math.min(maxOffsetX, Math.max(-maxOffsetX, nextPosition.x)),
             y: Math.min(maxOffsetY, Math.max(-maxOffsetY, nextPosition.y)),
         };
-    }, [imageSize, viewportSize, zoom]);
+    }, [imageSize, viewportRect, zoom]);
 
     const baseScale = useMemo(() => {
-        if (!imageSize || !viewportSize) return 1;
-        return Math.max(viewportSize / imageSize.width, viewportSize / imageSize.height);
-    }, [imageSize, viewportSize]);
+        if (!imageSize || !viewportRect.width || !viewportRect.height) return 1;
+        return Math.max(viewportRect.width / imageSize.width, viewportRect.height / imageSize.height);
+    }, [imageSize, viewportRect.height, viewportRect.width]);
 
     const renderedImageStyle = useMemo(() => {
         if (!imageSize) return null;
@@ -86,7 +88,11 @@ export default function ProfilePictureUpload({ readOnly = false }) {
         if (!node) return;
 
         const updateViewportSize = () => {
-            setViewportSize(Math.max(1, Math.round(node.getBoundingClientRect().width)));
+            const rect = node.getBoundingClientRect();
+            setViewportRect({
+                width: Math.max(1, Math.round(rect.width)),
+                height: Math.max(1, Math.round(rect.height)),
+            });
         };
 
         updateViewportSize();
@@ -99,7 +105,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
 
     useEffect(() => {
         setPosition((current) => clampPosition(current));
-    }, [zoom, imageSize, viewportSize, clampPosition]);
+    }, [zoom, imageSize, viewportRect, clampPosition]);
 
     const resetEditor = useCallback(() => {
         setEditorImageSrc(null);
@@ -230,18 +236,19 @@ export default function ProfilePictureUpload({ readOnly = false }) {
             const totalScale = baseScale * zoom;
             const renderedWidth = imageSize.width * totalScale;
             const renderedHeight = imageSize.height * totalScale;
-            const imageLeft = viewportSize / 2 - renderedWidth / 2 + position.x;
-            const imageTop = viewportSize / 2 - renderedHeight / 2 + position.y;
+            const imageLeft = viewportRect.width / 2 - renderedWidth / 2 + position.x;
+            const imageTop = viewportRect.height / 2 - renderedHeight / 2 + position.y;
 
             const sourceX = Math.max(0, (0 - imageLeft) / totalScale);
             const sourceY = Math.max(0, (0 - imageTop) / totalScale);
-            const sourceWidth = Math.min(imageSize.width - sourceX, viewportSize / totalScale);
-            const sourceHeight = Math.min(imageSize.height - sourceY, viewportSize / totalScale);
+            const sourceWidth = Math.min(imageSize.width - sourceX, viewportRect.width / totalScale);
+            const sourceHeight = Math.min(imageSize.height - sourceY, viewportRect.height / totalScale);
 
-            const outputSize = 1080;
+            const outputWidth = 1600;
+            const outputHeight = Math.round(outputWidth * (viewportRect.height / viewportRect.width));
             const canvas = document.createElement('canvas');
-            canvas.width = outputSize;
-            canvas.height = outputSize;
+            canvas.width = outputWidth;
+            canvas.height = outputHeight;
 
             const context = canvas.getContext('2d');
             context.drawImage(
@@ -252,8 +259,8 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                 sourceHeight,
                 0,
                 0,
-                outputSize,
-                outputSize
+                outputWidth,
+                outputHeight
             );
 
             const outputType = editorImageType === 'image/png' ? 'image/png' : 'image/jpeg';
@@ -289,7 +296,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                 <div className="profile-picture-upload__editor">
                     <div
                         ref={editorViewportRef}
-                        className="profile-picture-upload__viewport"
+                        className="profile-picture-upload__viewport public-hero-preview"
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
@@ -305,6 +312,16 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                             />
                         )}
                         <div className="profile-picture-upload__viewport-overlay" />
+                        <div className="public-hero-overlay profile-picture-upload__hero-overlay" />
+                        <div className="public-hero-inner profile-picture-upload__hero-inner">
+                            <div className="public-hero-info profile-picture-upload__hero-info">
+                                <h1 className="public-name profile-picture-upload__hero-name">{profile?.name || user?.name || 'Your Name'}</h1>
+                                <p className="public-position profile-picture-upload__hero-position">{profile?.position || 'Your Position'}</p>
+                                {profile?.nationality && (
+                                    <p className="public-nationality profile-picture-upload__hero-nationality">{profile.nationality}</p>
+                                )}
+                            </div>
+                        </div>
                         {uploading && (
                             <div className="profile-picture-upload__loading-overlay">
                                 Uploading...
@@ -366,7 +383,7 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                 </div>
             ) : (
                 <div className="profile-picture-upload__display">
-                    <div className="profile-picture-upload__preview-shell">
+                    <div className="profile-picture-upload__preview-shell public-hero-preview">
                         {previewUrl ? (
                             <img
                                 src={previewUrl}
@@ -376,6 +393,16 @@ export default function ProfilePictureUpload({ readOnly = false }) {
                         ) : (
                             <span className="profile-picture-upload__placeholder">👤</span>
                         )}
+                        <div className="public-hero-overlay profile-picture-upload__hero-overlay" />
+                        <div className="public-hero-inner profile-picture-upload__hero-inner">
+                            <div className="public-hero-info profile-picture-upload__hero-info">
+                                <h1 className="public-name profile-picture-upload__hero-name">{profile?.name || user?.name || 'Your Name'}</h1>
+                                <p className="public-position profile-picture-upload__hero-position">{profile?.position || 'Your Position'}</p>
+                                {profile?.nationality && (
+                                    <p className="public-nationality profile-picture-upload__hero-nationality">{profile.nationality}</p>
+                                )}
+                            </div>
+                        </div>
                         {uploading && (
                             <div className="profile-picture-upload__loading-overlay">
                                 Uploading...
