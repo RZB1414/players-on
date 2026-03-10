@@ -1,0 +1,187 @@
+.profile-picture-upload {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.profile-picture-upload__alert {
+    width: 100%;
+}
+
+.profile-picture-upload__display,
+.profile-picture-upload__editor {
+    width: 100%;
+}
+
+.profile-picture-upload__preview-shell,
+.profile-picture-upload__viewport {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    min-height: 220px;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.profile-picture-upload__preview-shell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-picture-upload__preview-image,
+.profile-picture-upload__editor-image {
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.profile-picture-upload__preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profile-picture-upload__editor-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    max-width: none;
+    pointer-events: none;
+}
+
+.profile-picture-upload__viewport {
+    touch-action: none;
+    cursor: grab;
+}
+
+.profile-picture-upload__viewport:active {
+    cursor: grabbing;
+}
+
+.profile-picture-upload__viewport-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.profile-picture-upload__loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.profile-picture-upload__placeholder {
+    font-size: clamp(3rem, 12vw, 6rem);
+    color: rgba(255, 255, 255, 0.22);
+}
+
+.profile-picture-upload__controls {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.profile-picture-upload__slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.profile-picture-upload__slider-labels {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.9rem;
+}
+
+.profile-picture-upload__slider-group input[type="range"] {
+    width: 100%;
+}
+
+.profile-picture-upload__hint {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.profile-picture-upload__actions,
+.profile-picture-upload__picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.profile-picture-upload__button {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    padding: 0.7rem 1.2rem;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-picture-upload__button:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.profile-picture-upload__button--primary {
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+}
+
+.profile-picture-upload__button--ghost {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-picture-upload__button--picker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+}
+
+.profile-picture-upload__button:disabled,
+.profile-picture-upload__button.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .profile-picture-upload__preview-shell,
+    .profile-picture-upload__viewport {
+        min-height: 180px;
+        border-radius: 20px;
+    }
+
+    .profile-picture-upload__actions {
+        flex-direction: column;
+    }
+
+    .profile-picture-upload__button {
+        width: 100%;
+        justify-content: center;
+    }
+}
