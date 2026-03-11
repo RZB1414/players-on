@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { COUNTRIES, getNationalityFlagUrl, getLanguageFlagUrl } from '../components/profile/CountrySearch';
+import { api } from '../utils/api';
 import '../styles/Dashboard.css';
 import dashboardLogo from '../assets/logo.png';
 
@@ -43,7 +44,6 @@ export default function DashboardPage() {
     const [analyticsCopied, setAnalyticsCopied] = useState(false);
     const [analyticsError, setAnalyticsError] = useState('');
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://players-on-api.volleyplusapp.workers.dev';
     const profileSlug = profile?.slug;
     const analyticsSlug = analytics?.slug;
     const publicSlug = analyticsSlug || profileSlug;
@@ -86,20 +86,11 @@ export default function DashboardPage() {
 
         setAnalyticsLoading(true);
         setAnalyticsError('');
-        fetch(`${API_BASE}/api/player/profile-analytics`, {
-            credentials: 'include',
-        })
-            .then(async (r) => {
-                const data = await r.json().catch(() => ({}));
-                if (!r.ok) {
-                    throw new Error(data.error || 'Failed to load analytics.');
-                }
-                return data;
-            })
+        api.get('/api/player/profile-analytics')
             .then(data => {
                 if (cancelled) return;
 
-                const payload = data.data || data || {};
+                const payload = data || {};
                 const analyticsData = payload.analytics || EMPTY_ANALYTICS;
                 const slugFromAnalytics = payload.slug || profileSlug || null;
 
@@ -126,7 +117,7 @@ export default function DashboardPage() {
         return () => {
             cancelled = true;
         };
-    }, [activeTab, analytics, API_BASE, profileSlug]);
+    }, [activeTab, analytics, profileSlug]);
 
     const handleLogout = async () => {
         await logout();
