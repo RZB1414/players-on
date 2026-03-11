@@ -7,12 +7,29 @@ import { trackProfileView, getProfileAnalytics } from '../services/analyticsServ
 const SLUG_REGEX = /^[a-zA-Z0-9-]{1,100}$/;
 const DOC_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 
+function sanitizeHeaderValue(value, maxLength = 256) {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    return trimmed ? trimmed.substring(0, maxLength) : null;
+}
+
 function getClientInfo(request) {
+    const userAgent = sanitizeHeaderValue(request.headers.get('User-Agent'), 512) || '';
+
     return {
         ip: request.headers.get('CF-Connecting-IP') || '0.0.0.0',
         city: request.headers.get('CF-IPCity') || null,
         country: request.headers.get('CF-IPCountry') || null,
-        userAgent: request.headers.get('User-Agent') || '',
+        continent: request.headers.get('CF-IPContinent') || null,
+        region: request.headers.get('CF-Region') || null,
+        regionCode: request.headers.get('CF-Region-Code') || null,
+        timezone: request.headers.get('CF-Timezone') || null,
+        postalCode: request.headers.get('CF-Postal-Code') || null,
+        referer: sanitizeHeaderValue(request.headers.get('Referer'), 512),
+        acceptLanguage: sanitizeHeaderValue(request.headers.get('Accept-Language'), 128),
+        platformHint: sanitizeHeaderValue(request.headers.get('Sec-CH-UA-Platform'), 64),
+        mobileHint: sanitizeHeaderValue(request.headers.get('Sec-CH-UA-Mobile'), 16),
+        userAgent,
     };
 }
 
@@ -57,7 +74,8 @@ export async function handleGetPublicProfile(request, env, ctx, db, rawSlug) {
     console.log(`[PUBLIC_PROFILE_NORMALIZED] Querying database for slug: "${slug}"`);
 
     // 2. KV rate limit (50/min per IP)
-    const { ip, city, country, userAgent } = getClientInfo(request);
+    const clientInfo = getClientInfo(request);
+    const { ip } = clientInfo;
     const rateLimitError = await applyPublicRateLimit(ip, env);
     if (rateLimitError) {
         console.warn(`[PUBLIC_PROFILE_RATELIMIT] IP ${ip} rate limited.`);
@@ -74,7 +92,7 @@ export async function handleGetPublicProfile(request, env, ctx, db, rawSlug) {
     console.log(`[PUBLIC_PROFILE_SUCCESS] Successfully retrieved profile for: "${profile.name}" (${slug})`);
 
     // 4. Track view non-blocking (never delays response)
-    ctx.waitUntil(trackProfileView(slug, ip, city, country, userAgent, db));
+    ctx.waitUntil(trackProfileView(slug, clientInfo, db));
 
     // 5. Build safe public response (no private fields)
     const publicData = {
@@ -109,6 +127,37 @@ export async function handleGetPublicProfile(request, env, ctx, db, rawSlug) {
     response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
     response.headers.set('CDN-Cache-Control', 'max-age=60');
 
+    return response;
+}
+
+/**
+ * POST /api/public/player/:slug/view
+ * Public — no auth required. Tracks a profile open immediately and bypasses cached GET responses.
+ */
+export async function handleTrackPublicProfileView(request, env, db, rawSlug) {
+    if (!rawSlug || !SLUG_REGEX.test(rawSlug)) {
+        return errorResponse('Invalid profile slug', 400);
+    }
+
+    const slug = rawSlug.toLowerCase();
+    const clientInfo = getClientInfo(request);
+    const { ip } = clientInfo;
+
+    const rateLimitError = await applyPublicRateLimit(ip, env);
+    if (rateLimitError) {
+        return rateLimitError;
+    }
+
+    const profile = await getPublicProfileBySlug(slug, db);
+    if (!profile) {
+        return errorResponse('Player not found', 404);
+    }
+
+    await trackProfileView(slug, clientInfo, db);
+
+    const response = successResponse({ tracked: true, slug });
+    response.headers.set('Cache-Control', 'no-store');
+    response.headers.set('CDN-Cache-Control', 'no-store');
     return response;
 }
 

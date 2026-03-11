@@ -24,7 +24,8 @@ import {
     handleGetPublicProfile,
     handleGetPublicDocument,
     handleGetProfileAnalytics,
-    handleGetPublicProfilePicture
+    handleGetPublicProfilePicture,
+    handleTrackPublicProfileView
 } from './routes/publicPlayer.js';
 import { ensurePlayerIndexes } from './services/playerService.js';
 import { ensureAnalyticsIndexes } from './services/analyticsService.js';
@@ -159,17 +160,20 @@ export default {
             }
 
             // Public Profile routes (no auth)
-            else if (path.startsWith('/api/public/player/') && method === 'GET') {
+            else if (path.startsWith('/api/public/player/') && (method === 'GET' || method === 'POST')) {
                 const rest = path.slice('/api/public/player/'.length); // e.g. "slug" or "slug/documents/docId" or "slug/profile-picture"
                 const parts = rest.split('/');
                 const slug = parts[0];
-                if (parts.length === 1) {
+                if (method === 'GET' && parts.length === 1) {
                     // GET /api/public/player/:slug
                     response = await handleGetPublicProfile(request, env, ctx, db, slug);
-                } else if (parts.length === 2 && parts[1] === 'profile-picture') {
+                } else if (method === 'POST' && parts.length === 2 && parts[1] === 'view') {
+                    // POST /api/public/player/:slug/view
+                    response = await handleTrackPublicProfileView(request, env, db, slug);
+                } else if (method === 'GET' && parts.length === 2 && parts[1] === 'profile-picture') {
                     // GET /api/public/player/:slug/profile-picture
                     response = await handleGetPublicProfilePicture(request, env, db, slug);
-                } else if (parts.length === 3 && parts[1] === 'documents') {
+                } else if (method === 'GET' && parts.length === 3 && parts[1] === 'documents') {
                     // GET /api/public/player/:slug/documents/:docId
                     const docId = parts[2];
                     response = await handleGetPublicDocument(request, env, db, slug, docId);
