@@ -73,6 +73,30 @@ function serializeCreatedAt(value) {
     }
 }
 
+function buildVisitorFingerprint({
+    ip,
+    userAgent,
+    acceptLanguage,
+    platformHint,
+    mobileHint,
+}) {
+    const raw = [
+        sanitizeText(ip, 128) || 'unknown-ip',
+        sanitizeText(userAgent, 512) || 'unknown-ua',
+        sanitizeText(acceptLanguage, 128) || 'unknown-lang',
+        sanitizeText(platformHint, 64) || 'unknown-platform',
+        sanitizeText(mobileHint, 16) || 'unknown-mobile',
+    ].join('|');
+
+    let hash = 0;
+    for (let i = 0; i < raw.length; i += 1) {
+        hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+        hash |= 0;
+    }
+
+    return `vf_${Math.abs(hash).toString(36)}`;
+}
+
 /**
  * Track a profile view with:
  * - Bot filtering
@@ -103,15 +127,23 @@ export async function trackProfileView(slug, clientInfo, db) {
         const col = db.collection('profile_views');
         const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-        // Check for a recent view from the same IP for this slug
+        const visitorFingerprint = buildVisitorFingerprint({
+            ip,
+            userAgent,
+            acceptLanguage,
+            platformHint,
+            mobileHint,
+        });
+
+        // Check for a recent view from the same device/profile fingerprint for this slug
         const existing = await col.findOne({
             profileSlug: slug,
-            ip,
+            visitorFingerprint,
             createdAt: { $gte: thirtyMinsAgo },
         });
 
         if (existing) {
-            console.log(`[ANALYTICS_TRACK_SKIPPED] IP ${ip} recently viewed slug: "${slug}"`);
+            console.log(`[ANALYTICS_TRACK_SKIPPED] Fingerprint ${visitorFingerprint} recently viewed slug: "${slug}"`);
             return;
         }
 
@@ -125,6 +157,7 @@ export async function trackProfileView(slug, clientInfo, db) {
         await col.insertOne({
             profileSlug: slug,
             ip,
+            visitorFingerprint,
             city: city || null,
             country: country || null,
             continent: continent || null,
@@ -183,7 +216,7 @@ export async function getProfileAnalytics(profileSlug, db) {
         // 2. Unique visitors (aggregation scales better than distinct())
         col.aggregate([
             { $match: { profileSlug } },
-            { $group: { _id: '$ip' } },
+            { $group: { _id: { $ifNull: ['$visitorFingerprint', '$ip'] } } },
             { $count: 'uniqueVisitors' },
         ]).toArray(),
 
@@ -351,7 +384,8 @@ export async function ensureAnalyticsIndexes(db) {
     await Promise.all([
         col.createIndex({ profileSlug: 1 }),
         col.createIndex({ profileSlug: 1, createdAt: -1 }),
-        // Compound for dedup query: profileSlug + ip + createdAt
+        // Compound for dedup query: profileSlug + visitorFingerprint + createdAt
+        col.createIndex({ profileSlug: 1, visitorFingerprint: 1, createdAt: -1 }),
         col.createIndex({ profileSlug: 1, ip: 1, createdAt: -1 }),
     ]);
 }
