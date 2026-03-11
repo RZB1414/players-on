@@ -23,11 +23,9 @@ function getYtThumbnail(url) {
 export default function PublicPlayerProfile() {
     const { slug } = useParams();
     const [player, setPlayer] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [pdfModal, setPdfModal] = useState(null); // { url, filename }
     const [videoModal, setVideoModal] = useState(null); // { url, title }
-    const [profilePicUrl, setProfilePicUrl] = useState(null);
     const [shareCopied, setShareCopied] = useState(false);
 
     const DEFAULT_PUBLIC_FRONTEND_URL = 'https://players-on.pages.dev';
@@ -44,30 +42,25 @@ export default function PublicPlayerProfile() {
     }
     const FRONTEND_URL = FRONTEND_URL_RAW.endsWith('/') ? FRONTEND_URL_RAW.slice(0, -1) : FRONTEND_URL_RAW;
     const profileUrl = `${FRONTEND_URL}/p/${slug}`;
+    const profilePictureVersion = player?.updatedAt ? new Date(player.updatedAt).getTime() : 'current';
+    const profilePicUrl = player?.hasProfilePicture
+        ? `${API_BASE}/api/public/player/${encodeURIComponent(slug)}/profile-picture?t=${profilePictureVersion}`
+        : null;
+    const loading = !error && (!player || player.slug !== slug);
 
     const trackPublicView = useCallback(async () => {
         try {
-            const response = await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}/view`, {
-                method: 'POST',
+            await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}?trackView=${Date.now()}`, {
+                method: 'GET',
                 cache: 'no-store',
                 keepalive: true,
             });
-
-            if (response.status === 404) {
-                // Backward-compatible fallback while the dedicated tracking route is not deployed yet.
-                await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}?trackView=${Date.now()}`, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    keepalive: true,
-                });
-            }
         } catch (trackErr) {
             console.warn('[PUBLIC_PROFILE_FRONTEND] Failed to track profile view:', trackErr);
         }
     }, [slug]);
 
     useEffect(() => {
-        setLoading(true);
         const urlToFetch = `${API_BASE}/api/public/player/${encodeURIComponent(slug)}`;
         console.log(`[PUBLIC_PROFILE_FRONTEND] Fetching from URL: ${urlToFetch}`);
 
@@ -84,33 +77,21 @@ export default function PublicPlayerProfile() {
             })
             .then(async data => {
                 console.log(`[PUBLIC_PROFILE_FRONTEND] Data successfully parsed:`, data);
+                setError(null);
                 setPlayer(data.data?.player || data.player || null);
                 await trackPublicView();
-                setLoading(false);
             })
             .catch(err => {
                 console.error(`[PUBLIC_PROFILE_FRONTEND] Caught error during fetch/parse:`, err);
+                setPlayer(null);
                 // Ignore TypeError when testing to not confuse with player missing, TypeError typically means fetch failed (CORS/network)
                 if (err.name === 'TypeError') {
                     setError('Failed to connect to the server. Please check your network or try again later.');
                 } else {
                     setError(err.message);
                 }
-                setLoading(false);
             });
     }, [slug, trackPublicView]);
-
-    // Load profile picture
-    useEffect(() => {
-        if (!player) return;
-        if (player.hasProfilePicture) {
-            // Include timestamp to bust browser cache
-            const timestamp = player.updatedAt ? new Date(player.updatedAt).getTime() : Date.now();
-            setProfilePicUrl(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}/profile-picture?t=${timestamp}`);
-        } else {
-            setProfilePicUrl(null);
-        }
-    }, [player?.hasProfilePicture, player?.updatedAt, slug]);
 
     const openDocument = useCallback(async (doc) => {
         const url = `${API_BASE}/api/public/player/${encodeURIComponent(slug)}/documents/${encodeURIComponent(doc.id)}`;
@@ -132,7 +113,7 @@ export default function PublicPlayerProfile() {
         } catch {
             alert(`Copy this link: ${profileUrl}`);
         }
-    }, [player?.name, profileUrl]);
+    }, [player, profileUrl]);
 
     const formatDate = (dateStr) => {
         if (!dateStr) return null;
