@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
+import logo from '../assets/logo.png';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -35,7 +36,7 @@ export default function LoginPage() {
                     </Link>
                     <div className="auth-header">
                         <div className="auth-logo">
-                            <span className="auth-logo-icon">⚡</span>
+                            <img className="auth-logo-icon" src={logo} alt="Players On logo" />
                             <h1>Players On</h1>
                         </div>
                         <p className="auth-subtitle">Sign in to your account</p>

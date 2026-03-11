@@ -18,6 +18,7 @@
 
 /* Search Input */
 .search-container {
+    margin-top: 1rem;
     margin-bottom: 3rem;
     /* Increased spacing between search and carousel */
     display: flex;

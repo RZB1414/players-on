@@ -45,6 +45,27 @@ export default function PublicPlayerProfile() {
     const FRONTEND_URL = FRONTEND_URL_RAW.endsWith('/') ? FRONTEND_URL_RAW.slice(0, -1) : FRONTEND_URL_RAW;
     const profileUrl = `${FRONTEND_URL}/p/${slug}`;
 
+    const trackPublicView = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}/view`, {
+                method: 'POST',
+                cache: 'no-store',
+                keepalive: true,
+            });
+
+            if (response.status === 404) {
+                // Backward-compatible fallback while the dedicated tracking route is not deployed yet.
+                await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}?trackView=${Date.now()}`, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    keepalive: true,
+                });
+            }
+        } catch (trackErr) {
+            console.warn('[PUBLIC_PROFILE_FRONTEND] Failed to track profile view:', trackErr);
+        }
+    }, [slug]);
+
     useEffect(() => {
         setLoading(true);
         const urlToFetch = `${API_BASE}/api/public/player/${encodeURIComponent(slug)}`;
@@ -61,9 +82,10 @@ export default function PublicPlayerProfile() {
                 }
                 return res.json();
             })
-            .then(data => {
+            .then(async data => {
                 console.log(`[PUBLIC_PROFILE_FRONTEND] Data successfully parsed:`, data);
                 setPlayer(data.data?.player || data.player || null);
+                await trackPublicView();
                 setLoading(false);
             })
             .catch(err => {
@@ -76,7 +98,7 @@ export default function PublicPlayerProfile() {
                 }
                 setLoading(false);
             });
-    }, [slug]);
+    }, [slug, trackPublicView]);
 
     // Load profile picture
     useEffect(() => {

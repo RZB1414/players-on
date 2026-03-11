@@ -4,6 +4,24 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { COUNTRIES, getNationalityFlagUrl, getLanguageFlagUrl } from '../components/profile/CountrySearch';
 import '../styles/Dashboard.css';
+import dashboardLogo from '../assets/logo.png';
+
+const EMPTY_ANALYTICS = {
+    totalViews: 0,
+    uniqueVisitors: 0,
+    last7DaysViews: 0,
+    last30DaysViews: 0,
+    topCities: [],
+    topCountries: [],
+    topBrowsers: [],
+    topDevices: [],
+    topReferrers: [],
+    topLanguages: [],
+    viewsByDay: [],
+    recentViews: [],
+    captureFields: [],
+    lastViewedAt: null,
+};
 
 export default function DashboardPage() {
     const {
@@ -23,11 +41,13 @@ export default function DashboardPage() {
     const [analytics, setAnalytics] = useState(null);
     const [analyticsLoading, setAnalyticsLoading] = useState(false);
     const [analyticsCopied, setAnalyticsCopied] = useState(false);
+    const [analyticsError, setAnalyticsError] = useState('');
 
     const API_BASE = import.meta.env.VITE_API_URL || 'https://players-on-api.volleyplusapp.workers.dev';
     const profileSlug = profile?.slug;
     const analyticsSlug = analytics?.slug;
     const publicSlug = analyticsSlug || profileSlug;
+    const analyticsData = analytics || EMPTY_ANALYTICS;
 
     const DEFAULT_PUBLIC_FRONTEND_URL = 'https://players-on.pages.dev';
     const browserOrigin = window.location.origin?.trim();
@@ -62,19 +82,51 @@ export default function DashboardPage() {
     // Fetch analytics when Analytics tab is opened
     useEffect(() => {
         if (activeTab !== 'analytics' || analytics !== null) return;
+        let cancelled = false;
+
         setAnalyticsLoading(true);
+        setAnalyticsError('');
         fetch(`${API_BASE}/api/player/profile-analytics`, {
             credentials: 'include',
         })
-            .then(r => r.json())
-            .then(data => {
-                const analyticsData = data.data?.analytics || {};
-                const slugFromAnalytics = data.data?.slug || null;
-                setAnalytics({ ...analyticsData, slug: slugFromAnalytics });
-                setAnalyticsLoading(false);
+            .then(async (r) => {
+                const data = await r.json().catch(() => ({}));
+                if (!r.ok) {
+                    throw new Error(data.error || 'Failed to load analytics.');
+                }
+                return data;
             })
-            .catch(() => setAnalyticsLoading(false));
-    }, [activeTab, analytics, API_BASE]);
+            .then(data => {
+                if (cancelled) return;
+
+                const payload = data.data || data || {};
+                const analyticsData = payload.analytics || EMPTY_ANALYTICS;
+                const slugFromAnalytics = payload.slug || profileSlug || null;
+
+                setAnalytics({
+                    ...EMPTY_ANALYTICS,
+                    ...analyticsData,
+                    slug: slugFromAnalytics,
+                });
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setAnalytics({
+                    ...EMPTY_ANALYTICS,
+                    slug: profileSlug || null,
+                });
+                setAnalyticsError(err.message || 'Failed to load analytics.');
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setAnalyticsLoading(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [activeTab, analytics, API_BASE, profileSlug]);
 
     const handleLogout = async () => {
         await logout();
@@ -137,6 +189,50 @@ export default function DashboardPage() {
         });
     };
 
+    const formatDateTime = (dateStr) => {
+        if (!dateStr) return '—';
+
+        return new Date(dateStr).toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+        });
+    };
+
+    const formatReferrer = (referer, refererHost) => {
+        if (refererHost) return refererHost;
+        if (!referer) return 'Direct / Unknown';
+
+        try {
+            return new URL(referer).hostname;
+        } catch {
+            return referer;
+        }
+    };
+
+    const renderAnalyticsList = (items, labelKey, emptyText) => {
+        if (!items?.length) {
+            return <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>{emptyText}</p>;
+        }
+
+        return (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {items.map((item, index) => (
+                    <li key={`${labelKey}-${index}`} style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        padding: '0.45rem 0',
+                        borderBottom: '1px solid rgba(255,255,255,0.04)',
+                        fontSize: '0.88rem',
+                        color: 'rgba(255,255,255,0.8)'
+                    }}>
+                        <span>{item[labelKey] || 'Unknown'}</span>
+                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{item.views}</span>
+                    </li>
+                ))}
+            </ul>
+        );
+    };
+
     if (!user) return null;
 
     return (
@@ -183,11 +279,14 @@ export default function DashboardPage() {
                 {/* Header */}
                 <header className="dashboard-header">
                     <div className="dashboard-header-left">
-                        <span className="dashboard-logo-icon">⚡</span>
+                        <img className="dashboard-logo-icon" src={dashboardLogo} alt="Players On logo" />
                         <h1>Players On</h1>
                     </div>
                     <div className="dashboard-header-right">
-                        <span className="dashboard-user-name">{user.name}</span>
+                        <div className="dashboard-user-meta">
+                            <span className="dashboard-user-name">{user.name}</span>
+                            <span className="dashboard-member-since">Member since {formatDate(user.createdAt)}</span>
+                        </div>
                         <button onClick={handleLogout} className="dashboard-logout-btn">
                             Sign Out
                         </button>
@@ -567,66 +666,191 @@ export default function DashboardPage() {
                                 </div>
                             )}
 
+                            {analyticsError && (
+                                <div style={{
+                                    marginBottom: '1rem',
+                                    background: 'rgba(239,68,68,0.12)',
+                                    border: '1px solid rgba(239,68,68,0.22)',
+                                    borderRadius: '12px',
+                                    padding: '0.85rem 1rem',
+                                    color: '#fecaca',
+                                    fontSize: '0.88rem',
+                                }}>
+                                    {analyticsError}
+                                </div>
+                            )}
+
                             {analyticsLoading ? (
                                 <div className="loading-state">
                                     <div className="auth-loading-spinner" />
                                     <p>Loading analytics...</p>
                                 </div>
-                            ) : !analytics || !analyticsSlug ? (
+                            ) : !publicSlug ? (
                                 <div className="empty-state">
-                                    <p>No data available yet. Share your public profile to start tracking visits.</p>
+                                    <p>Save your profile first to generate your public profile analytics.</p>
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                     <div className="readonly-stats-grid">
                                         <div className="readonly-stat">
                                             <span className="readonly-stat-label">Total Views</span>
-                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.totalViews ?? 0}</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analyticsData.totalViews ?? 0}</span>
                                         </div>
                                         <div className="readonly-stat">
                                             <span className="readonly-stat-label">Unique Visitors</span>
-                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.uniqueVisitors ?? 0}</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analyticsData.uniqueVisitors ?? 0}</span>
                                         </div>
                                         <div className="readonly-stat">
                                             <span className="readonly-stat-label">Last 7 days</span>
-                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.last7DaysViews ?? 0}</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analyticsData.last7DaysViews ?? 0}</span>
                                         </div>
                                         <div className="readonly-stat">
                                             <span className="readonly-stat-label">Last 30 days</span>
-                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analytics.last30DaysViews ?? 0}</span>
+                                            <span className="readonly-stat-value" style={{ fontSize: '1.5rem' }}>{analyticsData.last30DaysViews ?? 0}</span>
+                                        </div>
+                                        <div className="readonly-stat readonly-stat-wide">
+                                            <span className="readonly-stat-label">Last profile open</span>
+                                            <span className="readonly-stat-value">{formatDateTime(analyticsData.lastViewedAt)}</span>
                                         </div>
                                     </div>
 
-                                    {analytics.topCities?.length > 0 && (
-                                        <div className="readonly-section">
-                                            <h3 className="readonly-section-title">Top Cities</h3>
-                                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                                {analytics.topCities.map((c, i) => (
-                                                    <li key={i} style={{
-                                                        display: 'flex', justifyContent: 'space-between',
-                                                        padding: '0.45rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                                                        fontSize: '0.88rem', color: 'rgba(255,255,255,0.8)'
+                                    <div className="readonly-section">
+                                        <h3 className="readonly-section-title">Captured data on each profile open</h3>
+                                        {analyticsData.captureFields?.length > 0 ? (
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                                {analyticsData.captureFields.map((field) => (
+                                                    <span key={field} style={{
+                                                        padding: '0.35rem 0.6rem',
+                                                        borderRadius: '999px',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                        color: 'rgba(255,255,255,0.78)',
+                                                        fontSize: '0.78rem',
                                                     }}>
-                                                        <span>{c.city || 'Unknown'}{c.country ? ` · ${c.country}` : ''}</span>
-                                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{c.views}</span>
-                                                    </li>
+                                                        {field}
+                                                    </span>
                                                 ))}
-                                            </ul>
-                                        </div>
-                                    )}
+                                            </div>
+                                        ) : (
+                                            <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>No captured fields available yet.</p>
+                                        )}
+                                    </div>
 
-                                    {analytics.topCountries?.length > 0 && (
-                                        <div className="readonly-section">
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                                        <div className="readonly-section" style={{ marginTop: 0 }}>
+                                            <h3 className="readonly-section-title">Top Cities</h3>
+                                            {renderAnalyticsList(
+                                                analyticsData.topCities?.map((item) => ({
+                                                    ...item,
+                                                    location: `${item.city || 'Unknown'}${item.country ? ` · ${item.country}` : ''}`,
+                                                })),
+                                                'location',
+                                                'No city data yet.'
+                                            )}
+                                        </div>
+                                        <div className="readonly-section" style={{ marginTop: 0 }}>
                                             <h3 className="readonly-section-title">Top Countries</h3>
-                                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                                {analytics.topCountries.map((c, i) => (
-                                                    <li key={i} style={{
-                                                        display: 'flex', justifyContent: 'space-between',
-                                                        padding: '0.45rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                                                        fontSize: '0.88rem', color: 'rgba(255,255,255,0.8)'
+                                            {renderAnalyticsList(analyticsData.topCountries, 'country', 'No country data yet.')}
+                                        </div>
+                                        <div className="readonly-section" style={{ marginTop: 0 }}>
+                                            <h3 className="readonly-section-title">Browsers</h3>
+                                            {renderAnalyticsList(analyticsData.topBrowsers, 'browser', 'No browser data yet.')}
+                                        </div>
+                                        <div className="readonly-section" style={{ marginTop: 0 }}>
+                                            <h3 className="readonly-section-title">Devices</h3>
+                                            {renderAnalyticsList(analyticsData.topDevices, 'deviceType', 'No device data yet.')}
+                                        </div>
+                                        <div className="readonly-section" style={{ marginTop: 0 }}>
+                                            <h3 className="readonly-section-title">Referrers</h3>
+                                            {renderAnalyticsList(analyticsData.topReferrers, 'refererHost', 'No referrer data yet.')}
+                                        </div>
+                                        <div className="readonly-section" style={{ marginTop: 0 }}>
+                                            <h3 className="readonly-section-title">Languages</h3>
+                                            {renderAnalyticsList(analyticsData.topLanguages, 'language', 'No language data yet.')}
+                                        </div>
+                                    </div>
+
+                                    <div className="readonly-section">
+                                        <h3 className="readonly-section-title">Recent public profile opens</h3>
+                                        {analyticsData.recentViews?.length > 0 ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                {analyticsData.recentViews.map((view, index) => (
+                                                    <div key={`${view.ip}-${view.createdAt}-${index}`} style={{
+                                                        background: 'rgba(255,255,255,0.03)',
+                                                        border: '1px solid rgba(255,255,255,0.06)',
+                                                        borderRadius: '14px',
+                                                        padding: '0.95rem 1rem',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '0.55rem',
                                                     }}>
-                                                        <span>{c.country || 'Unknown'}</span>
-                                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{c.views}</span>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                                                            <strong style={{ color: '#fff', fontSize: '0.92rem' }}>
+                                                                {view.city || 'Unknown city'}{view.country ? `, ${view.country}` : ''}
+                                                            </strong>
+                                                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>
+                                                                {formatDateTime(view.createdAt)}
+                                                            </span>
+                                                        </div>
+
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.65rem' }}>
+                                                            <div>
+                                                                <div className="readonly-stat-label">IP</div>
+                                                                <div className="readonly-stat-value">{view.ip || 'Unknown'}</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="readonly-stat-label">Region / Timezone</div>
+                                                                <div className="readonly-stat-value">{view.region || 'Unknown'}{view.timezone ? ` · ${view.timezone}` : ''}</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="readonly-stat-label">Device</div>
+                                                                <div className="readonly-stat-value">{view.browser || 'Unknown'} · {view.operatingSystem || 'Unknown'} · {view.deviceType || 'Unknown'}</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="readonly-stat-label">Platform / Mobile</div>
+                                                                <div className="readonly-stat-value">{view.platformHint || 'Unknown'} · {view.isMobile ? 'Mobile' : 'Desktop / Other'}</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="readonly-stat-label">Language</div>
+                                                                <div className="readonly-stat-value">{view.acceptLanguage || view.primaryLanguage || 'Unknown'}</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="readonly-stat-label">Referrer</div>
+                                                                <div className="readonly-stat-value">{formatReferrer(view.referer, view.refererHost)}</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <div className="readonly-stat-label">User Agent</div>
+                                                            <div className="readonly-stat-value" style={{ wordBreak: 'break-word', fontSize: '0.82rem' }}>
+                                                                {view.userAgent || 'Unknown'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+                                                No visits recorded yet. Open the public link from another browser or device to generate analytics.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {analyticsData.viewsByDay?.length > 0 && (
+                                        <div className="readonly-section">
+                                            <h3 className="readonly-section-title">Last 30 days timeline</h3>
+                                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                                {analyticsData.viewsByDay.map((entry) => (
+                                                    <li key={entry.date} style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        padding: '0.45rem 0',
+                                                        borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                                        fontSize: '0.88rem',
+                                                        color: 'rgba(255,255,255,0.8)'
+                                                    }}>
+                                                        <span>{entry.date}</span>
+                                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{entry.views}</span>
                                                     </li>
                                                 ))}
                                             </ul>

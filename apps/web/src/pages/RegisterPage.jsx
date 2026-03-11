@@ -2,6 +2,11 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
+import logo from '../assets/logo.png';
+
+const SPECIAL_CHARACTERS = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?`~";
+const escapeForCharacterClass = (value) => value.replace(/[-[\\]\\^]/g, '\\$&');
+const symbolRegex = new RegExp(`[${escapeForCharacterClass(SPECIAL_CHARACTERS)}]`);
 
 export default function RegisterPage() {
     const [name, setName] = useState('');
@@ -19,7 +24,7 @@ export default function RegisterPage() {
             uppercase: /[A-Z]/.test(password),
             lowercase: /[a-z]/.test(password),
             number: /[0-9]/.test(password),
-            symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password),
+            symbol: symbolRegex.test(password),
         };
 
         const passed = Object.values(checks).filter(Boolean).length;
@@ -67,7 +72,7 @@ export default function RegisterPage() {
                 <div className="auth-card">
                     <div className="auth-header">
                         <div className="auth-logo">
-                            <span className="auth-logo-icon">⚡</span>
+                            <img className="auth-logo-icon" src={logo} alt="Players On logo" />
                             <h1>Players On</h1>
                         </div>
                         <p className="auth-subtitle">Create your account</p>
