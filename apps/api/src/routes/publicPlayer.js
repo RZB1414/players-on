@@ -15,16 +15,17 @@ function sanitizeHeaderValue(value, maxLength = 256) {
 
 function getClientInfo(request) {
     const userAgent = sanitizeHeaderValue(request.headers.get('User-Agent'), 512) || '';
+    const cf = request.cf || {};
 
     return {
         ip: request.headers.get('CF-Connecting-IP') || '0.0.0.0',
-        city: request.headers.get('CF-IPCity') || null,
-        country: request.headers.get('CF-IPCountry') || null,
-        continent: request.headers.get('CF-IPContinent') || null,
-        region: request.headers.get('CF-Region') || null,
-        regionCode: request.headers.get('CF-Region-Code') || null,
-        timezone: request.headers.get('CF-Timezone') || null,
-        postalCode: request.headers.get('CF-Postal-Code') || null,
+        city: sanitizeHeaderValue(cf.city, 128) || request.headers.get('CF-IPCity') || null,
+        country: sanitizeHeaderValue(cf.country, 32) || request.headers.get('CF-IPCountry') || null,
+        continent: sanitizeHeaderValue(cf.continent, 32) || request.headers.get('CF-IPContinent') || null,
+        region: sanitizeHeaderValue(cf.region, 128) || request.headers.get('CF-Region') || null,
+        regionCode: sanitizeHeaderValue(cf.regionCode, 16) || request.headers.get('CF-Region-Code') || null,
+        timezone: sanitizeHeaderValue(cf.timezone, 128) || request.headers.get('CF-Timezone') || null,
+        postalCode: sanitizeHeaderValue(cf.postalCode, 32) || request.headers.get('CF-Postal-Code') || null,
         referer: sanitizeHeaderValue(request.headers.get('Referer'), 512),
         acceptLanguage: sanitizeHeaderValue(request.headers.get('Accept-Language'), 128),
         platformHint: sanitizeHeaderValue(request.headers.get('Sec-CH-UA-Platform'), 64),
