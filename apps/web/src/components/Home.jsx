@@ -230,7 +230,7 @@ const Home = () => {
             {/* Conteúdo Central Principal */}
             <div className={`content-wrapper ${showOptions ? 'fade-out' : ''} ${mounted ? 'mounted' : ''}`}>
                 <div className="logo-container">
-                    <h1 className="title-modern">PLAYERS<br/>ON</h1>
+                    <h1 className="title-modern">PLAYERS ON</h1>
                     <p className="subtitle-modern">Elevate Your Game</p>
                 </div>
                 

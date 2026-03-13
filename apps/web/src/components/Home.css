@@ -34,33 +34,24 @@
 }
 
 .cosmic-background::before {
-    background-image:
-        radial-gradient(circle at 64% 42%, rgba(143, 198, 255, 0.26), transparent 34%),
-        radial-gradient(circle at 28% 74%, rgba(138, 83, 63, 0.28), transparent 30%),
-        url('../assets/nebula-background.svg');
-    background-position: center;
+    background-image: url('../assets/hero-volleyball.jpg');
+    background-position: center 28%;
     background-repeat: no-repeat;
     background-size: cover;
-    opacity: 0.48;
-    mix-blend-mode: screen;
-    transform: scale(1.06);
+    opacity: 1;
+    transform: scale(1.04);
     animation: nebula-drift 24s ease-in-out infinite alternate;
 }
 
 .cosmic-background::after {
-    background:
-        linear-gradient(135deg, rgba(23, 37, 84, 0.82), rgba(2, 6, 23, 0.38) 42%, rgba(96, 165, 250, 0.12) 70%, rgba(0, 0, 0, 0.55) 100%),
-        radial-gradient(circle at 63% 38%, rgba(147, 197, 253, 0.18), transparent 28%),
-        radial-gradient(circle at 26% 77%, rgba(180, 83, 9, 0.12), transparent 24%);
-    mix-blend-mode: color-dodge;
-    opacity: 0.62;
+    display: none;
 }
 
 .cosmic-gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom right, #172554, #020617, #000000);
-    opacity: 0.92;
+    background: transparent;
+    opacity: 0;
 }
 
 .nebula {
@@ -231,18 +222,19 @@
 
 /* ----- Tipografia Moderna ----- */
 .title-modern {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Freshman', sans-serif;
     font-weight: 900;
-    font-size: clamp(4rem, 10vw, 8rem);
+    font-size: clamp(2.6rem, 6.6vw, 5.4rem);
     line-height: 0.9;
     letter-spacing: -2px;
     color: #facc15; /* Amarelo vibrante */
     margin: 0;
+    white-space: nowrap;
     filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.3));
 }
 
 .subtitle-modern {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Freshman', sans-serif;
     font-weight: 600;
     font-size: clamp(0.875rem, 2vw, 1.25rem);
     letter-spacing: 0.35em;
@@ -259,7 +251,8 @@
     align-items: center;
     justify-content: center;
     padding: 1.2rem 4rem;
-    font-family: 'Montserrat', sans-serif;
+    margin-top: 5.5rem;
+    font-family: 'Varsity', sans-serif;
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.2em;
@@ -279,7 +272,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    background-color: #020617;
+    background-color: transparent;
     z-index: -2;
     transition: background-color 0.4s ease;
 }
