@@ -38,3 +38,20 @@ npm run build --workspace=apps/web
 ```
 
 Se o comando finalizar com sucesso (pasta `apps/web/dist` gerada), o projeto está pronto para deploy.
+
+## 5. Deploy da API com Token Local
+
+Para o deploy da API via Wrangler usar sempre sua conta Cloudflare localmente, o projeto agora lê o arquivo `.env` da raiz do monorepo durante `npm run deploy --workspace=apps/api`.
+
+Configure estes valores em `.env`:
+
+```dotenv
+CLOUDFLARE_ACCOUNT_ID=f5559c8828f727044a3b4c2bc557909d
+CLOUDFLARE_API_TOKEN=seu_token_aqui
+```
+
+Depois disso, o comando abaixo usará o token automaticamente:
+
+```powershell
+npm run deploy --workspace=apps/api
+```

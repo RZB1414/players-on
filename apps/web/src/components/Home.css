@@ -224,7 +224,7 @@
 .title-modern {
     font-family: 'Freshman', sans-serif;
     font-weight: 900;
-    font-size: clamp(2.6rem, 6.6vw, 5.4rem);
+    font-size: clamp(3rem, 7vw, 5.8rem);
     line-height: 0.9;
     letter-spacing: -2px;
     color: #facc15; /* Amarelo vibrante */

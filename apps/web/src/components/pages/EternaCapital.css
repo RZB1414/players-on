@@ -1,0 +1,326 @@
+.page-container.partner-page {
+    align-items: stretch;
+    padding: 5.5rem 1.25rem 2.5rem;
+}
+
+.partner-shell {
+    --partner-gold: #d9b264;
+    --partner-gold-strong: #f0cf8a;
+    --partner-panel: rgba(16, 23, 34, 0.72);
+    --partner-border: rgba(240, 207, 138, 0.16);
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.partner-hero,
+.partner-section,
+.partner-footer-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--partner-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(19, 27, 40, 0.78), rgba(12, 18, 29, 0.92));
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+}
+
+.partner-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.9fr);
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.partner-hero::before,
+.partner-section::before,
+.partner-footer-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(240, 207, 138, 0.08), transparent 35%, transparent 65%, rgba(255, 255, 255, 0.03));
+    pointer-events: none;
+}
+
+.partner-copy,
+.partner-spotlight,
+.section-heading,
+.partner-quote,
+.trust-card,
+.partner-footer-card > div {
+    position: relative;
+    z-index: 1;
+}
+
+.partner-badge,
+.section-tag,
+.spotlight-label,
+.spotlight-kicker {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(240, 207, 138, 0.28);
+    background: rgba(240, 207, 138, 0.08);
+    color: var(--partner-gold-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.partner-brand-lockup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    margin-top: 1rem;
+}
+
+.partner-logo {
+    width: clamp(120px, 18vw, 180px);
+    height: auto;
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
+}
+
+.partner-title {
+    margin: 0;
+    font-size: clamp(2.8rem, 6vw, 4.8rem);
+    line-height: 0.95;
+    background: linear-gradient(135deg, #ffffff 10%, #f0cf8a 55%, #c79239 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+
+.partner-lead {
+    max-width: 58ch;
+    margin: 1.25rem 0 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.partner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.75rem;
+}
+
+.partner-primary-cta,
+.partner-link {
+    text-decoration: none;
+}
+
+.partner-primary-cta,
+.partner-secondary-cta,
+.partner-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 0.9rem 1.35rem;
+    border-radius: 999px;
+    font-weight: 700;
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.partner-primary-cta {
+    color: #111824;
+    background: linear-gradient(135deg, var(--partner-gold-strong), #c79239);
+}
+
+.partner-primary-cta:hover,
+.partner-secondary-cta:hover,
+.partner-link:hover {
+    transform: translateY(-2px);
+}
+
+.partner-secondary-cta {
+    margin-top: 0;
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.partner-link {
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.partner-spotlight {
+    display: grid;
+    gap: 1rem;
+}
+
+.spotlight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.spotlight-panel {
+    padding: 1.2rem;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--partner-panel);
+    backdrop-filter: blur(14px);
+}
+
+.spotlight-panel strong {
+    display: block;
+    margin: 0.6rem 0;
+    font-size: 1.2rem;
+    line-height: 1.35;
+}
+
+.spotlight-panel p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+}
+
+.partner-section {
+    padding: 1.75rem;
+}
+
+.section-heading {
+    margin-bottom: 1.2rem;
+}
+
+.section-heading h2,
+.partner-footer-card h2 {
+    margin: 0.75rem 0 0;
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    line-height: 1.15;
+    color: #fff7e8;
+}
+
+.pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.pillar-card,
+.trust-card {
+    padding: 1.35rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.pillar-card h3 {
+    margin: 0 0 0.75rem;
+    color: var(--partner-gold-strong);
+    font-size: 1.05rem;
+}
+
+.pillar-card p,
+.partner-footer-card p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.7;
+}
+
+.partner-quote-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.partner-quote {
+    margin: 0;
+    padding: 1.5rem;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(240, 207, 138, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.partner-quote p {
+    margin: 0;
+    color: white;
+    font-size: clamp(1.45rem, 3vw, 2.2rem);
+    line-height: 1.25;
+}
+
+.partner-quote cite {
+    display: inline-block;
+    margin-top: 1rem;
+    color: rgba(255, 255, 255, 0.64);
+    font-style: normal;
+}
+
+.trust-list {
+    margin: 1rem 0 0;
+    padding-left: 1.1rem;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.8;
+}
+
+.partner-footer-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.75rem;
+}
+
+.footer-actions {
+    margin-top: 0;
+    justify-content: flex-end;
+}
+
+@media (max-width: 980px) {
+    .partner-hero,
+    .partner-quote-section,
+    .partner-footer-card,
+    .pillar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .partner-footer-card {
+        display: grid;
+    }
+}
+
+@media (max-width: 720px) {
+    .page-container.partner-page {
+        padding: 2rem 0.9rem 2rem;
+    }
+
+    .partner-hero,
+    .partner-section,
+    .partner-footer-card {
+        padding: 1.25rem;
+        border-radius: 22px;
+    }
+
+    .partner-brand-lockup {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .spotlight-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .partner-title {
+        font-size: 2.8rem;
+    }
+
+    .partner-lead {
+        font-size: 0.98rem;
+    }
+
+    .partner-actions,
+    .footer-actions {
+        width: 100%;
+    }
+
+    .partner-primary-cta,
+    .partner-secondary-cta,
+    .partner-link {
+        width: 100%;
+    }
+}

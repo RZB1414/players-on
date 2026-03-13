@@ -80,16 +80,33 @@
         0 0 30px rgba(255, 255, 255, 0.1);
 }
 
-.option-card h3 {
+.option-title {
     font-size: 1.2rem;
     font-weight: 700;
     color: white;
     text-transform: uppercase;
     letter-spacing: 2px;
-    z-index: 2;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     text-align: center;
     padding: 1rem;
+    z-index: 2;
+    margin: 0;
+}
+
+.option-title-partner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
+    padding: 1.25rem;
+}
+
+.option-partner-logo {
+    width: 164px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: brightness(1.08) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
 }
 
 .card-content {
@@ -199,6 +216,18 @@
         height: 80px;
         min-height: 80px;
         flex-direction: row;
+    }
+
+    .option-title {
+        padding: 0.75rem;
+    }
+
+    .option-title-partner {
+        padding: 0.75rem;
+    }
+
+    .option-partner-logo {
+        width: 154px;
     }
 
     .options-secondary {

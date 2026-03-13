@@ -5,7 +5,7 @@
 // import Options from './Options';
 // import OurServices from './pages/OurServices';
 // import PlayersCast from './pages/PlayersCast';
-// import PlayersOnStore from './pages/PlayersOnStore';
+// import EternaCapital from './pages/EternaCapital';
 // import VolleyballNews from './pages/VolleyballNews';
 // import AboutUs from './pages/AboutUs';
 // import ContactUs from './pages/ContactUs';
@@ -57,7 +57,7 @@
 //         switch (activePage) {
 //             case 'OurServices': return <OurServices onBack={handleBackToHome} />;
 //             case 'PlayersCast': return <PlayersCast onBack={handleBackToHome} />;
-//             case 'PlayersOnStore': return <PlayersOnStore onBack={handleBackToHome} />;
+//             case 'EternaCapital': return <EternaCapital onBack={handleBackToHome} />;
 //             case 'VolleyballNews': return <VolleyballNews onBack={handleBackToHome} />;
 //             case 'AboutUs': return <AboutUs onBack={handleBackToHome} />;
 //             case 'ContactUs': return <ContactUs onBack={handleBackToHome} />;
@@ -118,7 +118,7 @@ import topLogo from '../assets/logo.png';
 import Options from './Options';
 import OurServices from './pages/OurServices';
 import PlayersCast from './pages/PlayersCast';
-import PlayersOnStore from './pages/PlayersOnStore';
+import EternaCapital from './pages/EternaCapital';
 import VolleyballNews from './pages/VolleyballNews';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
@@ -178,7 +178,7 @@ const Home = () => {
         switch (activePage) {
             case 'OurServices': return <OurServices onBack={handleBackToHome} />;
             case 'PlayersCast': return <PlayersCast onBack={handleBackToHome} />;
-            case 'PlayersOnStore': return <PlayersOnStore onBack={handleBackToHome} />;
+            case 'EternaCapital': return <EternaCapital onBack={handleBackToHome} />;
             case 'VolleyballNews': return <VolleyballNews onBack={handleBackToHome} />;
             case 'AboutUs': return <AboutUs onBack={handleBackToHome} />;
             case 'ContactUs': return <ContactUs onBack={handleBackToHome} />;

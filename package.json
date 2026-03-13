@@ -11,6 +11,7 @@
     "deploy": "npm run deploy --workspaces --if-present"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^8.0.0"
   }
 }
