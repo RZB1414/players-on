@@ -84,7 +84,7 @@ export default function DashboardPage() {
         if (activeTab !== 'analytics' || analytics !== null) return;
         let cancelled = false;
 
-        api.get('/api/player/profile-analytics')
+        api.get('/api/player/profile-analytics', { cache: 'no-store' })
             .then(data => {
                 if (cancelled) return;
 
@@ -118,6 +118,7 @@ export default function DashboardPage() {
 
     const handleOpenAnalyticsTab = () => {
         setAnalyticsError('');
+        setAnalytics(null);
         setActiveTab('analytics');
     };
 

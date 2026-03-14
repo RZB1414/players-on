@@ -257,5 +257,12 @@ export async function handleGetProfileAnalytics(request, env, db) {
 
     const analytics = await getProfileAnalytics(player.slug, db);
 
-    return successResponse({ analytics, slug: player.slug });
+    return successResponse(
+        { analytics, slug: player.slug },
+        200,
+        {
+            'Cache-Control': 'private, no-store, no-cache, must-revalidate',
+            'CDN-Cache-Control': 'no-store',
+        }
+    );
 }

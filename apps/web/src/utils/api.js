@@ -171,8 +171,8 @@ export const api = {
     post: (endpoint, body) =>
         request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
 
-    get: (endpoint) =>
-        request(endpoint, { method: 'GET' }),
+    get: (endpoint, options = {}) =>
+        request(endpoint, { method: 'GET', ...options }),
 
     delete: (endpoint) =>
         request(endpoint, { method: 'DELETE' }),
