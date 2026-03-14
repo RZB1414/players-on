@@ -50,11 +50,15 @@ export default function PublicPlayerProfile() {
 
     const trackPublicView = useCallback(async () => {
         try {
-            await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}?trackView=${Date.now()}`, {
-                method: 'GET',
+            const response = await fetch(`${API_BASE}/api/public/player/${encodeURIComponent(slug)}/view`, {
+                method: 'POST',
                 cache: 'no-store',
                 keepalive: true,
             });
+
+            if (!response.ok) {
+                throw new Error(`Tracking failed with HTTP ${response.status}`);
+            }
         } catch (trackErr) {
             console.warn('[PUBLIC_PROFILE_FRONTEND] Failed to track profile view:', trackErr);
         }

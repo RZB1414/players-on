@@ -40,7 +40,6 @@ export default function DashboardPage() {
     const [error, setError] = useState('');
     const [profilePicUrl, setProfilePicUrl] = useState(null);
     const [analytics, setAnalytics] = useState(null);
-    const [analyticsLoading, setAnalyticsLoading] = useState(false);
     const [analyticsCopied, setAnalyticsCopied] = useState(false);
     const [analyticsError, setAnalyticsError] = useState('');
 
@@ -48,6 +47,7 @@ export default function DashboardPage() {
     const analyticsSlug = analytics?.slug;
     const publicSlug = analyticsSlug || profileSlug;
     const analyticsData = analytics || EMPTY_ANALYTICS;
+    const analyticsLoading = activeTab === 'analytics' && analytics === null;
 
     const DEFAULT_PUBLIC_FRONTEND_URL = 'https://players-on.pages.dev';
     const browserOrigin = window.location.origin?.trim();
@@ -84,8 +84,6 @@ export default function DashboardPage() {
         if (activeTab !== 'analytics' || analytics !== null) return;
         let cancelled = false;
 
-        setAnalyticsLoading(true);
-        setAnalyticsError('');
         api.get('/api/player/profile-analytics')
             .then(data => {
                 if (cancelled) return;
@@ -107,11 +105,6 @@ export default function DashboardPage() {
                     slug: profileSlug || null,
                 });
                 setAnalyticsError(err.message || 'Failed to load analytics.');
-            })
-            .finally(() => {
-                if (!cancelled) {
-                    setAnalyticsLoading(false);
-                }
             });
 
         return () => {
@@ -121,6 +114,16 @@ export default function DashboardPage() {
 
     const handleLogout = async () => {
         await logout();
+    };
+
+    const handleOpenAnalyticsTab = () => {
+        setAnalyticsError('');
+        setActiveTab('analytics');
+    };
+
+    const handleRefreshAnalytics = () => {
+        setAnalyticsError('');
+        setAnalytics(null);
     };
 
     const handleOpenViewer = async (id) => {
@@ -148,13 +151,17 @@ export default function DashboardPage() {
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
                 }
-            } catch (e) { }
+            } catch {
+                // Ignore browser fullscreen cleanup failures.
+            }
 
             try {
                 if (window.screen?.orientation?.unlock) {
                     window.screen.orientation.unlock();
                 }
-            } catch (e) { }
+            } catch {
+                // Ignore orientation unlock failures on unsupported devices.
+            }
         }
     };
 
@@ -300,7 +307,7 @@ export default function DashboardPage() {
                     </button>
                     <button
                         className={`dashboard-tab ${activeTab === 'analytics' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('analytics')}
+                        onClick={handleOpenAnalyticsTab}
                     >
                         Analytics
                     </button>
@@ -626,7 +633,12 @@ export default function DashboardPage() {
                                         <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
                                             <button
                                                 onClick={async () => {
-                                                    try { await navigator.clipboard.writeText(publicProfileUrl); } catch { }
+                                                    try {
+                                                        await navigator.clipboard.writeText(publicProfileUrl);
+                                                    } catch {
+                                                        setAnalyticsError('Could not copy the public link.');
+                                                        return;
+                                                    }
                                                     setAnalyticsCopied(true);
                                                     setTimeout(() => setAnalyticsCopied(false), 2500);
                                                 }}
@@ -854,7 +866,7 @@ export default function DashboardPage() {
                                 <button
                                     className="refresh-btn"
                                     style={{ marginTop: '1.5rem' }}
-                                    onClick={() => setAnalytics(null)}
+                                    onClick={handleRefreshAnalytics}
                                 >
                                     🔄 Refresh
                                 </button>
