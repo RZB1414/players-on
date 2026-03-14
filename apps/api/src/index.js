@@ -27,6 +27,7 @@ import {
     handleGetPublicProfilePicture,
     handleTrackPublicProfileView
 } from './routes/publicPlayer.js';
+import { handleGetWebVoleiNews } from './routes/news.js';
 import { ensurePlayerIndexes } from './services/playerService.js';
 import { ensureAnalyticsIndexes } from './services/analyticsService.js';
 import { errorResponse } from './utils/response.js';
@@ -67,6 +68,11 @@ export default {
                 }), {
                     headers: { 'Content-Type': 'application/json' },
                 });
+                return withCors(response, corsHeaders);
+            }
+
+            if (path === '/api/public/news/webvolei' && method === 'GET') {
+                const response = await handleGetWebVoleiNews();
                 return withCors(response, corsHeaders);
             }
 

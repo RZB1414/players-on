@@ -12,8 +12,8 @@ export function errorResponse(message, status = 400) {
     return jsonResponse({ success: false, error: message }, status);
 }
 
-export function successResponse(data, status = 200) {
-    return jsonResponse({ success: true, ...data }, status);
+export function successResponse(data, status = 200, headers = {}) {
+    return jsonResponse({ success: true, ...data }, status, headers);
 }
 
 export function getAccessTokenFromRequest(request) {

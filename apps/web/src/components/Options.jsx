@@ -1,5 +1,6 @@
 import React from 'react';
 import './Options.css';
+import webVoleiLogo from '../assets/web-volei-logo.png';
 
 const eternaCapitalLogo = 'https://www.eternacapital.com.br/logo.png';
 
@@ -9,7 +10,7 @@ const Options = ({ onOptionSelect }) => {
         { label: 'Our Services', id: 'OurServices' },
         { label: 'Players Cast', id: 'PlayersCast' },
         { label: 'Eterna Capital', id: 'EternaCapital' },
-        { label: 'Volleyball News', id: 'VolleyballNews' },
+        { label: 'Web Vôlei', id: 'WebVolley' },
     ];
 
     const secondaryOptions = [
@@ -28,12 +29,12 @@ const Options = ({ onOptionSelect }) => {
                         onClick={() => onOptionSelect(item.id)}
                     >
                         <div className="card-content">
-                            {item.id === 'EternaCapital' ? (
+                            {item.id === 'EternaCapital' || item.id === 'WebVolley' ? (
                                 <div className="option-title option-title-partner" aria-label={item.label}>
                                     <img
-                                        className="option-partner-logo"
-                                        src={eternaCapitalLogo}
-                                        alt="Eterna Capital"
+                                        className={`option-partner-logo ${item.id === 'WebVolley' ? 'option-partner-logo-webvolei' : ''}`}
+                                        src={item.id === 'EternaCapital' ? eternaCapitalLogo : webVoleiLogo}
+                                        alt={item.label}
                                     />
                                 </div>
                             ) : (

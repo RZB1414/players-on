@@ -119,7 +119,7 @@ import Options from './Options';
 import OurServices from './pages/OurServices';
 import PlayersCast from './pages/PlayersCast';
 import EternaCapital from './pages/EternaCapital';
-import VolleyballNews from './pages/VolleyballNews';
+import WebVolley from './pages/WebVolley';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import LatestHighlights from './pages/LatestHighlights';
@@ -179,7 +179,10 @@ const Home = () => {
             case 'OurServices': return <OurServices onBack={handleBackToHome} />;
             case 'PlayersCast': return <PlayersCast onBack={handleBackToHome} />;
             case 'EternaCapital': return <EternaCapital onBack={handleBackToHome} />;
-            case 'VolleyballNews': return <VolleyballNews onBack={handleBackToHome} />;
+            case 'VolleyballNews':
+            case 'Web Vôlei':
+            case 'WebVolley':
+                return <WebVolley onBack={handleBackToHome} />;
             case 'AboutUs': return <AboutUs onBack={handleBackToHome} />;
             case 'ContactUs': return <ContactUs onBack={handleBackToHome} />;
             case 'LatestHighlights': return <LatestHighlights onBack={handleBackToHome} />;

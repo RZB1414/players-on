@@ -1,0 +1,313 @@
+.page-container.volleyball-news-page {
+    align-items: stretch;
+    padding: 5.5rem 1.25rem 2.5rem;
+}
+
+.volleyball-news-shell {
+    --webvolei-red: #d64242;
+    --webvolei-red-strong: #ff6666;
+    --webvolei-sand: #f2d18f;
+    --webvolei-panel: rgba(15, 22, 38, 0.82);
+    --webvolei-border: rgba(242, 209, 143, 0.16);
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.webvolei-hero,
+.webvolei-section {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--webvolei-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(18, 26, 43, 0.86), rgba(9, 14, 24, 0.96));
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+}
+
+.webvolei-hero::before,
+.webvolei-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(214, 66, 66, 0.11), transparent 35%, transparent 65%, rgba(242, 209, 143, 0.05));
+    pointer-events: none;
+}
+
+.webvolei-hero {
+    display: block;
+    padding: 2rem;
+}
+
+.webvolei-copy,
+.webvolei-heading,
+.webvolei-news-card {
+    position: relative;
+    z-index: 1;
+}
+
+.webvolei-title {
+    margin: 0;
+    font-size: clamp(3rem, 6vw, 5.25rem);
+    line-height: 1.02;
+    padding-top: 0.08em;
+    background: linear-gradient(135deg, #ffffff 5%, #ffe5bc 45%, #ff7b7b 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.webvolei-lead,
+.webvolei-heading p,
+.webvolei-footer-card p,
+.webvolei-news-card p,
+.webvolei-news-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.75;
+}
+
+.webvolei-lead {
+    max-width: 60ch;
+    margin-top: 1.3rem;
+    font-size: 1.06rem;
+}
+
+.webvolei-cta-row,
+.webvolei-footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.75rem;
+}
+
+.webvolei-primary-cta,
+.webvolei-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 0.9rem 1.35rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.webvolei-primary-cta {
+    color: #150d10;
+    background: linear-gradient(135deg, var(--webvolei-sand), #f08f76);
+}
+
+.webvolei-primary-cta:hover,
+.webvolei-back-button:hover,
+.webvolei-nav-button:hover,
+.webvolei-indicator:hover {
+    transform: translateY(-2px);
+}
+
+.webvolei-news-card h3 {
+    display: block;
+    margin: 0;
+    color: #fff6e7;
+    font-size: 1.08rem;
+    line-height: 1.35;
+}
+
+.webvolei-section {
+    padding: 1.75rem;
+}
+
+.webvolei-heading {
+    margin-bottom: 1.3rem;
+}
+
+.webvolei-heading h2,
+.webvolei-footer-card h2 {
+    margin: 0.75rem 0 0.8rem;
+    font-size: clamp(1.65rem, 3vw, 2.4rem);
+    line-height: 1.15;
+    color: #fff6e7;
+}
+
+.webvolei-status-message {
+    margin-top: 0.9rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.95rem;
+}
+
+.webvolei-status-message.is-error {
+    color: #ffb0b0;
+}
+
+.webvolei-news-section {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.webvolei-carousel {
+    position: relative;
+}
+
+.webvolei-carousel-frame {
+    width: min(760px, 100%);
+    margin: 0 auto;
+}
+
+.webvolei-carousel-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.webvolei-news-card {
+    min-height: 100%;
+    width: 100%;
+    padding: 0;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(214, 66, 66, 0.12), transparent 24%),
+        linear-gradient(180deg, rgba(17, 24, 40, 0.92), rgba(8, 13, 22, 0.98));
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    text-decoration: none;
+    overflow: hidden;
+}
+
+.webvolei-news-image-wrap {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.webvolei-news-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.webvolei-news-card:hover .webvolei-news-image {
+    transform: scale(1.04);
+}
+
+.webvolei-news-content {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.2rem;
+}
+
+.webvolei-news-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.webvolei-news-meta span,
+.webvolei-indicator {
+    border-radius: 999px;
+}
+
+.webvolei-news-meta span {
+    padding: 0.4rem 0.72rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.82rem;
+}
+
+.webvolei-nav-button {
+    width: 54px;
+    height: 54px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.webvolei-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.7rem;
+}
+
+.webvolei-indicator {
+    width: 12px;
+    height: 12px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.webvolei-indicator.is-active {
+    background: linear-gradient(135deg, var(--webvolei-sand), var(--webvolei-red-strong));
+    transform: scale(1.15);
+}
+
+.webvolei-footer-standalone {
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+.webvolei-back-button {
+    margin-top: 0;
+    border-color: rgba(255, 255, 255, 0.18);
+    background: transparent;
+}
+
+@media (max-width: 980px) {
+    .webvolei-carousel-frame {
+        width: 100%;
+    }
+
+    .webvolei-nav-button {
+        width: 56px;
+        border-radius: 50%;
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 720px) {
+    .page-container.volleyball-news-page {
+        padding: 2rem 0.9rem 2rem;
+    }
+
+    .webvolei-hero,
+    .webvolei-section,
+    .webvolei-footer-card {
+        padding: 1.25rem;
+        border-radius: 22px;
+    }
+
+    .webvolei-title {
+        font-size: 2.9rem;
+        margin-top: 10px;
+        line-height: 1.06;
+        padding-top: 0.1em;
+    }
+
+    .webvolei-cta-row,
+    .webvolei-footer-actions {
+        width: 100%;
+    }
+
+    .webvolei-primary-cta,
+    .webvolei-back-button {
+        width: 100%;
+    }
+
+    .webvolei-news-card {
+        min-height: auto;
+    }
+
+    .webvolei-carousel-controls {
+        gap: 0.8rem;
+    }
+}

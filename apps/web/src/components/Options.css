@@ -109,6 +109,11 @@
     filter: brightness(1.08) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
 }
 
+.option-partner-logo-webvolei {
+    width: 176px;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.24));
+}
+
 .card-content {
     position: relative;
     z-index: 2;
@@ -228,6 +233,10 @@
 
     .option-partner-logo {
         width: 154px;
+    }
+
+    .option-partner-logo-webvolei {
+        width: 162px;
     }
 
     .options-secondary {

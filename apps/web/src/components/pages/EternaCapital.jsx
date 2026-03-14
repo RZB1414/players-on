@@ -53,9 +53,6 @@ const EternaCapital = ({ onBack }) => {
                             >
                                 Conhecer a Eterna Capital
                             </a>
-                            <button className="back-button partner-secondary-cta" onClick={onBack}>
-                                Voltar ao início
-                            </button>
                         </div>
                     </div>
 
@@ -105,7 +102,7 @@ const EternaCapital = ({ onBack }) => {
                         <p>
                             “É como um banco personalizado e com um gerente exclusivo.”
                         </p>
-                        <cite>Mensagem destacada pela Eterna Capital em seu site oficial</cite>
+                        <cite>Tenha acesso aos melhores contratos de diferentes instituições financeiras com um atendimento único e personalizado ao perfil.</cite>
                     </blockquote>
 
                     <div className="trust-card">
@@ -145,6 +142,9 @@ const EternaCapital = ({ onBack }) => {
                         >
                             Falar com a Eterna
                         </a>
+                        <button className="back-button partner-secondary-cta" onClick={onBack}>
+                            Voltar ao início
+                        </button>
                     </div>
                 </section>
             </div>
